@@ -2,26 +2,24 @@ package com.iftiqad.app
 
 import android.Manifest
 import android.app.Activity
-import android.app.NotificationManager
+import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.print.PrintAttributes
-import android.print.PrintManager
-import android.provider.Settings
+import android.util.Base64
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.core.content.FileProvider
+import java.io.File
 
 class MainActivity : Activity() {
 
     private lateinit var web: WebView
-    private var printView: WebView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,44 +33,21 @@ class MainActivity : Activity() {
         web.settings.allowFileAccess = true
         web.addJavascriptInterface(Bridge(), "Android")
         setContentView(web)
-        web.loadUrl("file:///android_asset/index.html")
+        val hash = if (intent.getBooleanExtra("open_today", false)) "#today" else ""
+        web.loadUrl("file:///android_asset/index.html$hash")
 
-        askPermissions()
-    }
-
-    private fun askPermissions() {
         if (Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
-        } else {
-            fullScreenCheck()
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        fullScreenCheck()
-    }
-
-    private fun fullScreenCheck() {
-        try {
-            if (Build.VERSION.SDK_INT >= 34) {
-                val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                val p = getSharedPreferences("iftiqad_main", Context.MODE_PRIVATE)
-                if (!nm.canUseFullScreenIntent() && !p.getBoolean("fs_asked", false)) {
-                    p.edit().putBoolean("fs_asked", true).apply()
-                    startActivity(
-                        Intent(
-                            Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
-                            Uri.parse("package:$packageName")
-                        )
-                    )
-                }
-            }
-        } catch (e: Exception) {
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra("open_today", false)) {
+            web.evaluateJavascript("window.goToday&&window.goToday()", null)
         }
     }
 
@@ -85,22 +60,74 @@ class MainActivity : Activity() {
         }
     }
 
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data
+        if (requestCode == 77 && resultCode == RESULT_OK && uri != null) {
+            try {
+                val bytes = contentResolver.openInputStream(uri)!!.use { it.readBytes() }
+                val b64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+                web.evaluateJavascript("window.onBackupData&&window.onBackupData('$b64')", null)
+            } catch (e: Exception) {
+                Toast.makeText(this, "تعذرت قراءة الملف", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun shareFile(f: File, mime: String, whatsapp: Boolean) {
+        val uri = FileProvider.getUriForFile(this, "com.iftiqad.app.fileprovider", f)
+        val i = Intent(Intent.ACTION_SEND).apply {
+            type = mime
+            putExtra(Intent.EXTRA_STREAM, uri)
+            clipData = ClipData.newRawUri("", uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        if (whatsapp) {
+            for (pkg in arrayOf("com.whatsapp", "com.whatsapp.w4b")) {
+                try {
+                    i.setPackage(pkg)
+                    startActivity(i)
+                    return
+                } catch (e: ActivityNotFoundException) {
+                }
+            }
+            i.setPackage(null)
+        }
+        startActivity(Intent.createChooser(i, "مشاركة"))
+    }
+
     inner class Bridge {
         @JavascriptInterface
-        fun scheduleAlarm(id: String, time: String, name: String, address: String, phone: String) {
+        fun scheduleVisit(
+            id: String, time: String, name: String, address: String, phone: String, lead: String
+        ) {
             try {
-                AlarmStore.schedule(
-                    applicationContext, id.toInt(), name, address, phone, time.toLong()
+                AlarmStore.scheduleVisit(
+                    applicationContext, id.toInt(), time.toLong(), name, address, phone,
+                    lead.toIntOrNull() ?: 0
                 )
             } catch (e: Exception) {
-                toast("تعذر ضبط المنبه")
+                toast("تعذر ضبط التنبيه")
             }
         }
 
         @JavascriptInterface
         fun cancelAlarm(id: String) {
+            try { AlarmStore.cancelVisit(applicationContext, id.toInt()) } catch (e: Exception) {}
+        }
+
+        @JavascriptInterface
+        fun cancelAllAlarms() {
+            try { AlarmStore.cancelAll(applicationContext) } catch (e: Exception) {}
+        }
+
+        @JavascriptInterface
+        fun setDaily(on: String, hour: String, minute: String) {
             try {
-                AlarmStore.cancel(applicationContext, id.toInt())
+                AlarmStore.setDaily(
+                    applicationContext, on == "1", hour.toIntOrNull() ?: 8, minute.toIntOrNull() ?: 0
+                )
             } catch (e: Exception) {
             }
         }
@@ -108,7 +135,7 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun dial(phone: String) {
             try {
-                startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
+                startActivity(Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone")))
             } catch (e: Exception) {
                 toast("تعذر فتح الاتصال")
             }
@@ -117,44 +144,59 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun openUrl(url: String) {
             try {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)))
             } catch (e: Exception) {
                 toast("تعذر فتح الرابط")
             }
         }
 
         @JavascriptInterface
-        fun shareText(text: String) {
+        fun sharePdf(json: String, fileName: String, target: String) {
             try {
-                val i = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, text)
+                val f = PdfBuilder.build(applicationContext, json, fileName)
+                runOnUiThread {
+                    try {
+                        shareFile(f, "application/pdf", target == "wa")
+                    } catch (e: Exception) {
+                        toast("تعذرت المشاركة")
+                    }
                 }
-                startActivity(Intent.createChooser(i, "مشاركة التقرير"))
             } catch (e: Exception) {
-                toast("تعذرت المشاركة")
+                toast("تعذر إنشاء الملف: ${e.message}")
             }
         }
 
         @JavascriptInterface
-        fun printHtml(html: String, title: String) {
+        fun exportBackup(text: String, fileName: String) {
+            try {
+                val dir = File(cacheDir, "reports")
+                dir.mkdirs()
+                val f = File(dir, fileName.replace(Regex("[\\\\/:*?\"<>|]"), "_"))
+                f.writeText(text, Charsets.UTF_8)
+                runOnUiThread {
+                    try {
+                        shareFile(f, "application/json", false)
+                    } catch (e: Exception) {
+                        toast("تعذرت المشاركة")
+                    }
+                }
+            } catch (e: Exception) {
+                toast("تعذر إنشاء النسخة الاحتياطية")
+            }
+        }
+
+        @JavascriptInterface
+        fun pickBackup() {
             runOnUiThread {
                 try {
-                    val w = WebView(this@MainActivity)
-                    w.webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView, url: String?) {
-                            val pm = getSystemService(Context.PRINT_SERVICE) as PrintManager
-                            pm.print(
-                                title,
-                                view.createPrintDocumentAdapter(title),
-                                PrintAttributes.Builder().build()
-                            )
-                        }
+                    val i = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "*/*"
                     }
-                    printView = w
-                    w.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+                    @Suppress("DEPRECATION")
+                    startActivityForResult(i, 77)
                 } catch (e: Exception) {
-                    toast("تعذر إنشاء التقرير")
+                    toast("تعذر فتح اختيار الملفات")
                 }
             }
         }

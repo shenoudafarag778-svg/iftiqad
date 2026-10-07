@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>تطبيق افتقاد</title>
 <style>
-:root{--bg:#070B14;--card:#111827;--line:#1F2937;--gold:#F5C542;--ind:#6366F1;--txt:#E5E7EB;--mut:#9CA3AF;--ok:#10B981;--bad:#EF4444}
+:root{--bg:#070B14;--card:#111827;--line:#1F2937;--gold:#F5C542;--ind:#6366F1;--txt:#E5E7EB;--mut:#9CA3AF;--ok:#10B981;--bad:#EF4444;--acc:#3B82F6}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100%}
 header{padding:10px 12px 8px;border-bottom:1px solid var(--line);background:var(--bg)}
 .row{display:flex;gap:8px;align-items:center}
-h1{font-size:18px;margin:0;flex:1;color:var(--gold)}
+h1{font-size:17px;margin:0;flex:1;color:var(--acc)}
 button{font-family:inherit;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:12px;padding:9px 12px;font-size:14px;transition:transform .12s,background .15s}
 button:active{transform:scale(.93);background:#1b2538}
 .top-btn{font-size:13px;padding:8px 10px}
@@ -19,11 +19,17 @@ input,select,textarea{font-family:inherit;width:100%;background:#0b1220;color:va
 #search{margin-top:8px}
 .tabs{display:flex;gap:6px;margin-top:8px}
 .tabs button{flex:1}
-.tabs button.on{background:var(--ind);border-color:var(--ind);color:#fff}
+.tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
 #list{flex:1;overflow-y:auto;padding:10px 12px 90px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-right:4px solid var(--acc);border-radius:16px;padding:12px;margin-bottom:10px}
+.hd{display:flex;gap:10px;align-items:center}
+.av{width:40px;height:40px;border-radius:50%;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;flex:none}
 .nm{font-size:17px;font-weight:700}
 .sub{color:var(--mut);font-size:13px;margin-top:2px;word-break:break-word}
+.tag{background:rgba(239,68,68,.2);color:var(--bad);border-radius:8px;font-size:11px;padding:2px 6px;margin-inline-start:6px;font-weight:600}
+.tm{background:rgba(245,158,11,.15);color:#F59E0B;border-radius:10px;padding:6px 10px;font-weight:700;font-size:14px;white-space:nowrap}
+.bar{height:5px;background:#1F2937;border-radius:4px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc)}
 .wk{display:flex;align-items:center;gap:6px;margin-top:8px}
 .wk b{width:58px;font-size:12px;color:var(--mut);font-weight:600}
 .chip{flex:1;padding:8px 2px;font-size:12px;border-radius:10px;text-align:center}
@@ -35,16 +41,23 @@ input,select,textarea{font-family:inherit;width:100%;background:#0b1220;color:va
 .stat.wait{background:rgba(245,197,66,.12);border-color:var(--gold);color:var(--gold)}
 .stat.done{background:rgba(16,185,129,.18);border-color:var(--ok);color:var(--ok)}
 .alm{margin-top:8px;font-size:13px;color:var(--gold)}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.stats span{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 10px;font-size:12px}
+.banner{background:rgba(245,197,66,.1);border:1px solid var(--gold);border-radius:14px;padding:10px;margin-bottom:10px;font-size:13px;display:flex;gap:8px;align-items:center}
+.banner span{flex:1}
 nav{display:flex;border-top:1px solid var(--line);background:#0b1220}
-nav button{flex:1;border:0;border-radius:0;background:transparent;padding:12px 2px;font-size:13px;color:var(--mut)}
-nav button.on{color:var(--gold);font-weight:700;box-shadow:inset 0 3px 0 var(--gold)}
-#fab{position:fixed;left:16px;bottom:76px;background:var(--ind);border:0;color:#fff;font-size:15px;font-weight:700;padding:13px 18px;border-radius:30px;box-shadow:0 6px 18px rgba(99,102,241,.45)}
+nav button{flex:1;border:0;border-radius:0;background:transparent;padding:8px 2px;font-size:11px;color:var(--mut);line-height:1.3;position:relative}
+nav button i{display:block;font-style:normal;font-size:18px}
+nav button.on{color:var(--acc);font-weight:700;box-shadow:inset 0 3px 0 var(--acc)}
+nav button b{position:absolute;top:2px;left:50%;margin-left:6px;background:var(--bad);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;min-width:16px}
+#fab{position:fixed;left:16px;bottom:76px;background:var(--acc);border:0;color:#fff;font-size:15px;font-weight:700;padding:13px 18px;border-radius:30px;box-shadow:0 6px 18px rgba(0,0,0,.5)}
 #dlg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
 #dlg .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:90%;overflow-y:auto}
 #dlg h3{margin:0 0 10px;color:var(--gold);font-size:17px}
 .f{margin-bottom:10px}.f label{display:block;font-size:13px;color:var(--mut);margin-bottom:4px}
 .g{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .bt{display:flex;gap:8px;margin-top:12px}.bt button{flex:1;padding:12px}
+.mi{width:100%;text-align:right;margin-bottom:8px;padding:14px;font-size:15px}
 .pri{background:var(--ind)!important;border-color:var(--ind)!important;color:#fff}
 .dng{background:rgba(239,68,68,.2)!important;border-color:var(--bad)!important;color:var(--bad)}
 .empty{text-align:center;color:var(--mut);margin-top:50px;line-height:1.9}
@@ -62,6 +75,7 @@ nav button.on{color:var(--gold);font-weight:700;box-shadow:inset 0 3px 0 var(--g
 <div id="app">
 <header>
 <div class="row"><h1 id="ttl"></h1>
+<button class="top-btn" id="bMenu">⋮</button>
 <button class="top-btn" id="bNew">🔄 شهر جديد</button>
 <button class="top-btn" id="bPdf">📄 PDF</button></div>
 <input id="search" placeholder="🔍 بحث بالاسم...">
@@ -76,63 +90,129 @@ nav button.on{color:var(--gold);font-weight:700;box-shadow:inset 0 3px 0 var(--g
 <div id="toast"></div>
 <script>
 var SECTIONS=[
-{k:'primary',n:'ابتدائي',t:'خدمة ابتدائي (مدارس الأحد)',kind:'p'},
-{k:'prep',n:'إعدادي وثانوي',t:'اجتماع إعدادي وثانوي',kind:'p'},
-{k:'women',n:'سيدات',t:'اجتماع سيدات',kind:'d'},
-{k:'general',n:'عام',t:'اجتماع عام',kind:'d'}];
+{k:'primary',n:'ابتدائي',t:'ابتدائي (مدارس الأحد)',f:'خدمة ابتدائي (مدارس الأحد)',kind:'p',c:'#3B82F6',i:'🧒'},
+{k:'prep',n:'إعدادي وثانوي',t:'إعدادي وثانوي',f:'اجتماع إعدادي وثانوي',kind:'p',c:'#8B5CF6',i:'🎓'},
+{k:'women',n:'سيدات',t:'اجتماع سيدات',f:'اجتماع سيدات',kind:'d',c:'#EC4899',i:'👩'},
+{k:'general',n:'عام',t:'اجتماع عام',f:'اجتماع عام',kind:'d',c:'#14B8A6',i:'👥'}];
+var TODAY={k:'today',n:'اليوم',t:'زيارات اليوم',f:'زيارات اليوم',kind:'t',c:'#F59E0B',i:'📅'};
 var PILLARS=[['mass','قداس'],['comm','تناول'],['conf','اعتراف'],['pray','صلاة']];
 var A=window.Android;
 var S=load(),cur='primary',sub='att',q='';
+if(location.hash==='#today')cur='today';
 
-function load(){try{var d=JSON.parse(localStorage.getItem('iftiqad_v1'));if(d&&d.servees)return d}catch(e){}return{next:1,servees:[]}}
+function load(){var d=null;try{d=JSON.parse(localStorage.getItem('iftiqad_v1'))}catch(e){}
+if(!d||!d.servees)d={next:1,servees:[]};
+if(!d.archive)d.archive=[];
+if(!d.settings)d.settings={};
+var st=d.settings;if(st.lead==null)st.lead=60;if(st.daily==null)st.daily=true;if(!st.dailyTime)st.dailyTime='08:00';if(!st.lastBackup)st.lastBackup=0;
+return d}
 function save(){try{localStorage.setItem('iftiqad_v1',JSON.stringify(S))}catch(e){}}
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function get(id){for(var i=0;i<S.servees.length;i++)if(S.servees[i].id===id)return S.servees[i]}
-function sec(){for(var i=0;i<SECTIONS.length;i++)if(SECTIONS[i].k===cur)return SECTIONS[i]}
-function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},2600)}
+function sec(k){k=k||cur;var a=SECTIONS.concat([TODAY]);for(var i=0;i<a.length;i++)if(a[i].k===k)return a[i]}
+function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},2800)}
 function nat(fn){if(A&&A[fn]){var a=Array.prototype.slice.call(arguments,1);try{A[fn].apply(A,a)}catch(e){toast('حدث خطأ')};return true}toast('هذه الميزة تعمل داخل التطبيق فقط');return false}
-function sym(v){return v==1?'✔':v==2?'✘':'–'}
+function natq(fn){if(A&&A[fn]){try{A[fn].apply(A,Array.prototype.slice.call(arguments,1))}catch(e){}}}
+function sym(v){return v==1?'√':v==2?'×':''}
 function ar(d){return String(d||'').replace(/[٠-٩]/g,function(x){return x.charCodeAt(0)-1632})}
 function waNum(p){var n=ar(p).replace(/[^\d]/g,'');if(!n)return'';if(n.indexOf('00')===0)n=n.slice(2);else if(n.charAt(0)==='0')n='20'+n.slice(1);return n}
 function fmt(ms){try{return new Date(ms).toLocaleString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'numeric',minute:'2-digit'})}catch(e){return new Date(ms).toLocaleString()}}
+function fmtS(ms){try{return new Date(ms).toLocaleString('ar-EG',{weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})}catch(e){return new Date(ms).toLocaleString()}}
+function fmtT(ms){try{return new Date(ms).toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit'})}catch(e){return new Date(ms).toLocaleTimeString()}}
+function monthLabel(){try{return new Date().toLocaleDateString('ar-EG',{month:'long',year:'numeric'})}catch(e){return String(new Date().getMonth()+1)+'/'+new Date().getFullYear()}}
+function isToday(ms){return ms>0&&new Date(ms).toDateString()===new Date().toDateString()}
 
 function newServee(section,name,phone,address){
 var s={id:S.next++,section:section,name:name,phone:phone,address:address,notes:'',p:[{},{},{},{}],att:[0,0,0,0],status:'wait',alarmAt:0};
 S.servees.push(s);return s}
 
+/* ---------- stats / absentees ---------- */
+function pillarStats(L){return PILLARS.map(function(pl){var ok=0,tot=0;L.forEach(function(s){for(var w=0;w<4;w++){var v=s.p[w][pl[0]]||0;if(v==1){ok++;tot++}else if(v==2)tot++}});return{n:pl[1],ok:ok,tot:tot}})}
+function attStats(L){var ok=0,tot=0;L.forEach(function(s){s.att.forEach(function(v){if(v==1){ok++;tot++}else if(v==2)tot++})});return{ok:ok,tot:tot}}
+function pct(ok,tot){return tot?Math.round(ok*100/tot)+'%':'—'}
+function ws(rec,kind,w){
+if(!rec)return'none';
+if(kind==='p'){var any=0,miss=0;PILLARS.forEach(function(pl){var v=(rec.p[w]||{})[pl[0]]||0;if(v==1)any=1;if(v==2)miss=1});return any?'ok':miss?'miss':'none'}
+var v2=(rec.att||[])[w]||0;return v2==1?'ok':v2==2?'miss':'none'}
+function streak(s){
+var kind=sec(s.section).kind;var seq=[];
+var arch=S.archive.slice(-2);
+arch.forEach(function(a){var rec=null;for(var i=0;i<a.servees.length;i++)if(a.servees[i].id===s.id)rec=a.servees[i];for(var w=0;w<4;w++)seq.push(ws(rec,kind,w))});
+for(var w2=0;w2<4;w2++)seq.push(ws(s,kind,w2));
+while(seq.length&&seq[seq.length-1]==='none')seq.pop();
+var n=0;while(seq.length&&seq[seq.length-1]==='miss'){n++;seq.pop()}
+return n}
+function absentees(){var out=[];S.servees.forEach(function(s){var n=streak(s);if(n>=2)out.push({s:s,n:n})});out.sort(function(a,b){return b.n-a.n});return out}
+
+/* ---------- render ---------- */
+function todayList(){var l=S.servees.filter(function(s){return isToday(s.alarmAt)});l.sort(function(a,b){return a.alarmAt-b.alarmAt});return l}
 function render(){
-var sc=sec();$('ttl').textContent=sc.t;
-var nav='';SECTIONS.forEach(function(x){nav+='<button data-sec="'+x.k+'" class="'+(x.k===cur?'on':'')+'">'+x.n+'</button>'});$('nav').innerHTML=nav;
+var sc=sec();
+document.documentElement.style.setProperty('--acc',sc.c);
+$('ttl').textContent=sc.t;
+var tl=todayList();var pend=tl.filter(function(s){return s.status!=='done'}).length;
+var nav='';SECTIONS.concat([TODAY]).forEach(function(x){nav+='<button data-sec="'+x.k+'" class="'+(x.k===cur?'on':'')+'"><i>'+x.i+'</i>'+x.n+(x.k==='today'&&pend?'<b>'+pend+'</b>':'')+'</button>'});$('nav').innerHTML=nav;
 $('subtabs').style.display=sc.kind==='d'?'flex':'none';
+$('fab').style.display=sc.kind==='t'?'none':'block';
+$('bPdf').style.display=sc.kind==='t'?'none':'';
 var tb=$('subtabs').querySelectorAll('button');for(var i=0;i<tb.length;i++)tb[i].className=tb[i].getAttribute('data-sub')===sub?'on':'';
 var ql=q.trim().toLowerCase();
-var items=S.servees.filter(function(s){return s.section===cur&&(!ql||s.name.toLowerCase().indexOf(ql)>-1)});
-if(!items.length){$('list').innerHTML='<div class="empty">'+(ql?'لا توجد نتائج للبحث':'لا يوجد مخدومين في هذا القسم بعد<br>اضغط "＋ إضافة مخدوم" للبدء')+'</div>';return}
-var h='';items.forEach(function(s){h+=card(s,sc)});$('list').innerHTML=h}
-
-function card(s,sc){
-var h='<div class="card" data-id="'+s.id+'"><div class="nm">'+esc(s.name)+'</div>';
-var info=[];if(s.phone)info.push('📞 '+esc(s.phone));if(s.address)info.push('📍 '+esc(s.address));
-if(info.length)h+='<div class="sub">'+info.join(' &nbsp;·&nbsp; ')+'</div>';
-var vis=sc.kind==='d'&&sub==='vis';
-if(sc.kind==='p'){
-for(var w=0;w<4;w++){h+='<div class="wk"><b>جمعة '+(w+1)+'</b>';
-PILLARS.forEach(function(pl){var v=s.p[w][pl[0]]||0;h+='<button class="chip s'+v+'" data-act="pil" data-w="'+w+'" data-k="'+pl[0]+'">'+pl[1]+' '+sym(v)+'</button>'});
-h+='</div>'}
-}else if(!vis){
-h+='<div class="wk">';for(var w2=0;w2<4;w2++){var v2=s.att[w2]||0;h+='<button class="chip s'+v2+'" data-act="att" data-w="'+w2+'">جمعة '+(w2+1)+' '+(v2==1?'حاضر ✔':v2==2?'غائب ✘':'—')+'</button>'}h+='</div>';
+var h='';
+if(S.servees.length&&Date.now()-S.settings.lastBackup>14*86400000)h+='<div class="banner"><span>⚠️ لم تأخذ نسخة احتياطية من بياناتك منذ فترة.</span><button data-top="backup">💾 نسخ الآن</button></div>';
+var items;
+if(sc.kind==='t'){
+items=tl.filter(function(s){return!ql||s.name.toLowerCase().indexOf(ql)>-1});
+if(!items.length){$('list').innerHTML=h+'<div class="empty">'+(ql?'لا توجد نتائج للبحث':'لا توجد زيارات مضبوطة لليوم<br>اضبط موعد افتقاد من برنامج الافتقاد وسيظهر هنا')+'</div>';return}
+items.forEach(function(s){h+=card(s,'today')})
 }else{
-if(s.alarmAt>Date.now())h+='<div class="alm">⏰ المنبه: '+esc(fmt(s.alarmAt))+'</div>';
-else h+='<div class="alm" style="color:var(--mut)">⏰ لم يُضبط منبه</div>';
+var all=S.servees.filter(function(s){return s.section===cur});
+items=all.filter(function(s){return!ql||s.name.toLowerCase().indexOf(ql)>-1});
+if(all.length){
+h+='<div class="stats">';
+h+='<span>👥 '+all.length+' مخدوم</span>';
+if(sc.kind==='p'){pillarStats(all).forEach(function(p){h+='<span>'+p.n+' '+pct(p.ok,p.tot)+'</span>'})}
+else if(sub==='att'){var a=attStats(all);h+='<span>نسبة الحضور '+pct(a.ok,a.tot)+'</span>'}
+else{var d=all.filter(function(s){return s.status==='done'}).length;h+='<span>✔ تم الافتقاد '+d+' من '+all.length+'</span>'}
+h+='</div>'}
+if(!items.length){$('list').innerHTML=h+'<div class="empty">'+(ql?'لا توجد نتائج للبحث':'لا يوجد مخدومين في هذا القسم بعد<br>اضغط "＋ إضافة مخدوم" للبدء')+'</div>';return}
+var mode=sc.kind==='p'?'p':(sub==='vis'?'vis':'att');
+items.forEach(function(s){h+=card(s,mode)})}
+$('list').innerHTML=h}
+
+function card(s,mode){
+var n=streak(s);
+var h='<div class="card" data-id="'+s.id+'"><div class="hd"><div class="av">'+esc(s.name.charAt(0))+'</div><div style="flex:1"><div class="nm">'+esc(s.name)+(n>=2?'<span class="tag">غايب '+n+' جمعات</span>':'')+'</div>';
+var info=[];if(s.phone)info.push('📞 '+esc(s.phone));if(s.address)info.push('📍 '+esc(s.address));
+if(mode==='today')info.unshift(sec(s.section).i+' '+esc(sec(s.section).n));
+if(info.length)h+='<div class="sub">'+info.join(' &nbsp;·&nbsp; ')+'</div>';
+h+='</div>';
+if(mode==='today')h+='<div class="tm">'+esc(fmtT(s.alarmAt))+'</div>';
+h+='</div>';
+if(mode==='p'){
+var ok=0;for(var w0=0;w0<4;w0++)PILLARS.forEach(function(pl){if(s.p[w0][pl[0]]==1)ok++});
+h+='<div class="bar"><i style="width:'+Math.round(ok*100/16)+'%"></i></div>';
+for(var w=0;w<4;w++){h+='<div class="wk"><b>جمعة '+(w+1)+'</b>';
+PILLARS.forEach(function(pl){var v=s.p[w][pl[0]]||0;h+='<button class="chip s'+v+'" data-act="pil" data-w="'+w+'" data-k="'+pl[0]+'">'+pl[1]+' '+(v==1?'✔':v==2?'✕':'')+'</button>'});
+h+='</div>'}
+}else if(mode==='att'){
+var okA=s.att.filter(function(v){return v==1}).length;
+h+='<div class="bar"><i style="width:'+Math.round(okA*100/4)+'%"></i></div><div class="wk">';
+for(var w2=0;w2<4;w2++){var v2=s.att[w2]||0;h+='<button class="chip s'+v2+'" data-act="att" data-w="'+w2+'">جمعة '+(w2+1)+' '+(v2==1?'حاضر ✔':v2==2?'غائب ✕':'—')+'</button>'}h+='</div>';
+}else{
+if(mode==='vis'){
+if(s.alarmAt>0){var fut=s.alarmAt>Date.now();h+='<div class="alm" style="'+(fut?'':'color:var(--mut)')+'">⏰ موعد الافتقاد: '+esc(fmt(s.alarmAt))+'</div>'}
+else h+='<div class="alm" style="color:var(--mut)">⏰ لم يُضبط موعد</div>'}
 h+='<button class="stat '+s.status+'" data-act="stat">'+(s.status==='done'?'تم الافتقاد بنجاح ✔':'في الانتظار ⏳')+'</button>'}
 h+='<div class="acts"><button data-act="call">📞 اتصال</button><button data-act="wa">💬 واتساب</button><button data-act="edit">✏️ تعديل</button><button data-act="note">📝 ملاحظات'+(s.notes?' •':'')+'</button>';
-if(vis||sc.kind==='p')h+='<button data-act="alarm">⏰ منبه</button>';
+if(mode!=='att')h+='<button data-act="alarm">⏰ موعد</button>';
 h+='<button data-act="del" class="dng">🗑</button></div></div>';return h}
 
+/* ---------- dialogs ---------- */
 function openDlg(html){$('box').innerHTML=html;$('dlg').style.display='flex'}
 function closeDlg(){$('dlg').style.display='none';$('box').innerHTML=''}
 window.onBack=function(){if($('dlg').style.display==='flex'){closeDlg();return true}return false};
+window.goToday=function(){closeDlg();cur='today';render()};
 function ask(msg,cb,okTxt){openDlg('<h3>تأكيد</h3><div style="line-height:1.8">'+msg+'</div><div class="bt"><button id="ko" class="pri">'+(okTxt||'نعم')+'</button><button id="kc">إلغاء</button></div>');
 $('ko').onclick=function(){closeDlg();cb()};$('kc').onclick=closeDlg}
 
@@ -145,7 +225,8 @@ openDlg('<h3>'+(e?'تعديل بيانات المخدوم':'إضافة مخدو�
 '<div class="bt"><button id="fs" class="pri">حفظ</button><button id="fc">إلغاء</button></div>');
 $('fc').onclick=closeDlg;
 $('fs').onclick=function(){var n=$('fn').value.trim();if(!n){toast('اكتب الاسم أولاً');return}
-if(e){s.name=n;s.phone=ar($('fp').value.trim());s.address=$('fa').value.trim()}
+if(e){s.name=n;s.phone=ar($('fp').value.trim());s.address=$('fa').value.trim();
+if(s.alarmAt>Date.now()&&s.status!=='done')natq('scheduleVisit',String(s.id),String(s.alarmAt),s.name,s.address||'—',s.phone||'—',String(S.settings.lead))}
 else newServee(cur,n,ar($('fp').value.trim()),$('fa').value.trim());
 save();closeDlg();render()}}
 
@@ -164,72 +245,158 @@ openDlg('<h3>⏰ ضبط موعد الافتقاد</h3><div style="color:var(--mu
 '<div class="f"><label>الساعة</label><select id="ah">'+opts(1,12,h)+'</select></div>'+
 '<div class="f"><label>الدقيقة</label><select id="ai">'+opts(0,59,d.getMinutes(),function(i){return i<10?'0'+i:i})+'</select></div>'+
 '<div class="f"><label>الفترة</label><select id="ap"><option value="am"'+(pm?'':' selected')+'>صباحاً ص</option><option value="pm"'+(pm?' selected':'')+'>مساءً م</option></select></div></div>'+
-'<div class="bt"><button id="as" class="pri">حفظ المنبه</button><button id="ac">إلغاء</button></div>'+
-(s.alarmAt>Date.now()?'<div class="bt"><button id="ax" class="dng">حذف المنبه</button></div>':''));
+'<div class="bt"><button id="as" class="pri">حفظ الموعد</button><button id="ac">إلغاء</button></div>'+
+(s.alarmAt>0?'<div class="bt"><button id="ax" class="dng">حذف الموعد</button></div>':''));
 $('ac').onclick=closeDlg;
-if($('ax'))$('ax').onclick=function(){s.alarmAt=0;save();nat('cancelAlarm',String(s.id));closeDlg();render();toast('تم حذف المنبه')};
+if($('ax'))$('ax').onclick=function(){s.alarmAt=0;save();natq('cancelAlarm',String(s.id));closeDlg();render();toast('تم حذف الموعد')};
 $('as').onclick=function(){
 var day=+$('ad').value,mo=+$('am').value,yr=+$('ay').value,hr=+$('ah').value,mi=+$('ai').value,isPm=$('ap').value==='pm';
 if(!yr||yr<2000||yr>2100){toast('اكتب سنة صحيحة');return}
 var h24=hr%12+(isPm?12:0);var dt=new Date(yr,mo-1,day,h24,mi,0,0);
 if(dt.getDate()!==day||dt.getMonth()!==mo-1){toast('هذا التاريخ غير موجود في الشهر');return}
 if(dt.getTime()<=Date.now()){toast('اختر موعداً في المستقبل');return}
-if(!nat('scheduleAlarm',String(s.id),String(dt.getTime()),s.name,s.address||'—',s.phone||'—'))return;
-s.alarmAt=dt.getTime();save();closeDlg();render();toast('تم ضبط المنبه ✔')}}
+if(!nat('scheduleVisit',String(s.id),String(dt.getTime()),s.name,s.address||'—',s.phone||'—',String(S.settings.lead)))return;
+s.alarmAt=dt.getTime();s.status='wait';save();closeDlg();render();toast('تم ضبط الموعد ✔')}}
 
-function repHtml(keys){
-var h='<html dir="rtl"><head><meta charset="utf-8"><style>body{font-family:Tahoma,Arial,sans-serif;padding:14px;color:#111}h1{font-size:20px;text-align:center}h2{font-size:16px;margin:18px 0 6px;border-bottom:2px solid #444}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}td,th{border:1px solid #888;padding:5px;text-align:center}th{background:#e5e7eb}td:first-child{text-align:right}small{color:#555}</style></head><body><h1>كشف الحضور والافتقاد</h1><p style="text-align:center"><small>'+esc(new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}))+'</small></p>';
-keys.forEach(function(k){var sc=SECTIONS.filter(function(x){return x.k===k})[0];var L=S.servees.filter(function(s){return s.section===k});
-h+='<h2>'+sc.t+'</h2>';if(!L.length){h+='<p>لا يوجد مخدومين</p>';return}
-if(sc.kind==='p'){h+='<table><tr><th>الاسم</th><th>جمعة 1</th><th>جمعة 2</th><th>جمعة 3</th><th>جمعة 4</th></tr>';
-L.forEach(function(s){h+='<tr><td>'+esc(s.name)+'</td>';for(var w=0;w<4;w++){h+='<td>'+PILLARS.map(function(pl){return sym(s.p[w][pl[0]])}).join(' ')+'</td>'}h+='</tr>'});
-h+='</table><small>ترتيب الرموز: قداس – تناول – اعتراف – صلاة | ✔ تم  ✘ لم يتم</small>'}
-else{h+='<table><tr><th>الاسم</th><th>جمعة 1</th><th>جمعة 2</th><th>جمعة 3</th><th>جمعة 4</th></tr>';
-L.forEach(function(s){h+='<tr><td>'+esc(s.name)+'</td>'+s.att.map(function(v){return'<td>'+(v==1?'حاضر':v==2?'غائب':'–')+'</td>'}).join('')+'</tr>'});
-h+='</table><table><tr><th>الاسم</th><th>الهاتف</th><th>العنوان</th><th>موعد الزيارة</th><th>الحالة</th></tr>';
-L.forEach(function(s){h+='<tr><td>'+esc(s.name)+'</td><td>'+esc(s.phone)+'</td><td>'+esc(s.address)+'</td><td>'+(s.alarmAt>Date.now()?esc(fmt(s.alarmAt)):'—')+'</td><td>'+(s.status==='done'?'تم الافتقاد ✔':'في الانتظار')+'</td></tr>'});h+='</table>'}});
-return h+'</body></html>'}
-
-function repText(keys){
-var t='📋 كشف الحضور والافتقاد\n';
-keys.forEach(function(k){var sc=SECTIONS.filter(function(x){return x.k===k})[0];var L=S.servees.filter(function(s){return s.section===k});
-t+='\n*'+sc.t+'*\n';if(!L.length){t+='— لا يوجد مخدومين\n';return}
-L.forEach(function(s){
-if(sc.kind==='p'){t+='• '+s.name+'\n';for(var w=0;w<4;w++)t+='   ج'+(w+1)+': '+PILLARS.map(function(pl){return pl[1]+sym(s.p[w][pl[0]])}).join(' ')+'\n'}
-else{t+='• '+s.name+' | حضور: '+s.att.map(sym).join(' ')+' | '+(s.status==='done'?'تم الافتقاد ✔':'في الانتظار ⏳')+'\n'}})});
-return t}
-
+/* ---------- reports (PDF) ---------- */
+function reportSpec(k,L,label){
+var sc=sec(k);
+var spec={title:'كشف '+sc.f,sub:'الشهر: '+label+'   —   تاريخ الإصدار: '+new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}),summary:['عدد المخدومين: '+L.length],tables:[]};
+if(sc.kind==='p'){
+spec.summary.push('نسبة الإنجاز: '+pillarStats(L).map(function(p){return p.n+' '+pct(p.ok,p.tot)}).join('   |   '));
+var cols=[3.4],h1=[{t:''}],h2=[{t:'الاسم'}];
+for(var w=0;w<4;w++){h1.push({t:'جمعة '+(w+1),s:4});PILLARS.forEach(function(pl){h2.push({t:pl[1]});cols.push(1)})}
+var rows=[];
+L.forEach(function(s){var r=[{t:s.name,a:'r'}];for(var w2=0;w2<4;w2++)PILLARS.forEach(function(pl){var v=s.p[w2][pl[0]]||0;r.push({t:sym(v),bg:v==1?'g':v==2?'r':''})});rows.push(r)});
+if(!rows.length)rows.push([{t:'لا يوجد مخدومين',s:17}]);
+spec.tables.push({heading:'المتابعة الروحية الأسبوعية',cols:cols,head:[h1,h2],rows:rows,fs:8,foot:'الرموز:  √ تم   ×  لم يتم   (فارغ = لم يُسجَّل)'})
+}else{
+var a=attStats(L);var done=L.filter(function(s){return s.status==='done'}).length;
+spec.summary.push('نسبة الحضور: '+pct(a.ok,a.tot)+'   |   تم الافتقاد: '+done+' من '+L.length);
+var r1=[];L.forEach(function(s){var cnt=s.att.filter(function(v){return v==1}).length;
+r1.push([{t:s.name,a:'r'}].concat(s.att.map(function(v){return{t:v==1?'حاضر':v==2?'غائب':'',bg:v==1?'g':v==2?'r':''}}),[{t:cnt+' / 4'}]))});
+if(!r1.length)r1.push([{t:'لا يوجد مخدومين',s:6}]);
+spec.tables.push({heading:'كشف حضور الاجتماع',cols:[3,1,1,1,1,1.2],head:[[{t:'الاسم'},{t:'جمعة 1'},{t:'جمعة 2'},{t:'جمعة 3'},{t:'جمعة 4'},{t:'مرات الحضور'}]],rows:r1,fs:9});
+var r2=[];L.forEach(function(s){r2.push([{t:s.name,a:'r'},{t:s.phone||'—'},{t:s.address||'—',a:'r'},{t:s.alarmAt?fmtS(s.alarmAt):'—'},{t:s.status==='done'?'تم الافتقاد':'في الانتظار',bg:s.status==='done'?'g':'y'}])});
+if(!r2.length)r2.push([{t:'لا يوجد مخدومين',s:5}]);
+spec.tables.push({heading:'خطة وبرنامج الافتقاد',cols:[2.2,1.6,3,2.6,1.6],head:[[{t:'الاسم'},{t:'الهاتف'},{t:'العنوان'},{t:'موعد الزيارة'},{t:'الحالة'}]],rows:r2,fs:9})}
+return spec}
+function sendReport(k,L,label,target){
+var sc=sec(k);var name='كشف_'+sc.n.replace(/\s+/g,'_')+'_'+label.replace(/\s+/g,'_')+'.pdf';
+nat('sharePdf',JSON.stringify(reportSpec(k,L,label)),name,target)}
+function secOpts(def){var h='';SECTIONS.forEach(function(x){h+='<option value="'+x.k+'"'+(x.k===def?' selected':'')+'>'+x.f+'</option>'});return h}
 function pdfDlg(){
-openDlg('<h3>📄 تصدير التقرير</h3><div class="f"><label>القسم</label><select id="sc"><option value="cur">القسم الحالي فقط</option><option value="all">كل الأقسام</option></select></div>'+
-'<div class="bt"><button id="pp" class="pri">🖨️ طباعة / حفظ PDF</button></div><div class="bt"><button id="pw">💬 مشاركة عبر واتساب</button></div><div class="bt"><button id="pc">إغلاق</button></div>');
-function keys(){return $('sc').value==='all'?SECTIONS.map(function(x){return x.k}):[cur]}
-$('pc').onclick=closeDlg;
-$('pp').onclick=function(){var k=keys();closeDlg();nat('printHtml',repHtml(k),'تقرير افتقاد')};
-$('pw').onclick=function(){var k=keys();closeDlg();nat('shareText',repText(k))}}
+var def=cur==='today'?'primary':cur;
+openDlg('<h3>📄 كشف PDF</h3><div class="f"><label>اختر الخدمة</label><select id="sc">'+secOpts(def)+'</select></div>'+
+'<div class="sub">يتم إنشاء ملف PDF منظم للخدمة المختارة فقط.</div>'+
+'<div class="bt"><button id="pw" class="pri">💬 إرسال PDF عبر واتساب</button></div>'+
+'<div class="bt"><button id="pa">📤 مشاركة / حفظ بتطبيق آخر</button></div><div class="bt"><button id="pc">إغلاق</button></div>');
+function go(t){var k=$('sc').value;closeDlg();sendReport(k,S.servees.filter(function(s){return s.section===k}),monthLabel(),t)}
+$('pc').onclick=closeDlg;$('pw').onclick=function(){go('wa')};$('pa').onclick=function(){go('any')}}
 
+/* ---------- month / archive ---------- */
 function newMonth(){
-ask('سيتم تصفير علامات الحضور والافتقاد وحذف المنبهات لجميع الأقسام.<br><b>الأسماء والهواتف والعناوين والملاحظات تبقى كما هي.</b><br>هل تريد بدء شهر جديد؟',function(){
-S.servees.forEach(function(s){s.p=[{},{},{},{}];s.att=[0,0,0,0];s.status='wait';if(s.alarmAt){nat('cancelAlarm',String(s.id))}s.alarmAt=0});
-save();render();toast('بدأ شهر جديد ✔')},'نعم، شهر جديد')}
+ask('سيتم حفظ نسخة من الشهر الحالي في "سجل الشهور"، ثم تصفير علامات الحضور والافتقاد وحذف المواعيد.<br><b>الأسماء والهواتف والعناوين والملاحظات تبقى كما هي.</b><div class="f" style="margin-top:10px"><label>اسم الشهر المحفوظ</label><input id="ml" value="'+esc(monthLabel())+'"></div>',function(){
+var lbl=($('ml')&&$('ml').value.trim())||monthLabel();
+S.archive.push({ts:Date.now(),label:lbl,servees:S.servees.map(function(s){return{id:s.id,section:s.section,name:s.name,phone:s.phone,address:s.address,p:s.p,att:s.att,status:s.status,alarmAt:s.alarmAt}})});
+S.servees.forEach(function(s){s.p=[{},{},{},{}];s.att=[0,0,0,0];s.status='wait';s.alarmAt=0});
+natq('cancelAllAlarms');save();render();toast('بدأ شهر جديد ✔')},'نعم، شهر جديد')}
 
+/* ---------- menu ---------- */
+function menuDlg(){
+var n=absentees().length;
+openDlg('<h3>⋮ المزيد</h3>'+
+'<button class="mi" data-m="abs">🚨 الغايبين'+(n?' ('+n+')':'')+'</button>'+
+'<button class="mi" data-m="arch">📚 سجل الشهور السابقة ('+S.archive.length+')</button>'+
+'<button class="mi" data-m="bk">💾 نسخة احتياطية (إرسال)</button>'+
+'<button class="mi" data-m="rs">📥 استرجاع نسخة احتياطية</button>'+
+'<button class="mi" data-m="set">🔔 إعدادات التنبيهات</button>'+
+'<div class="sub" style="margin-top:6px">آخر نسخة احتياطية: '+(S.settings.lastBackup?esc(fmt(S.settings.lastBackup)):'لم تتم بعد')+'</div>'+
+'<div class="bt"><button id="mc">إغلاق</button></div>');
+$('mc').onclick=closeDlg}
+
+function absDlg(){
+var L=absentees();var h='<h3>🚨 الغايبون (جمعتين متتاليتين أو أكثر)</h3>';
+if(!L.length)h+='<div class="empty" style="margin-top:20px">لا يوجد غايبون حالياً 👏</div>';
+L.forEach(function(x){h+='<div class="card" style="padding:10px" data-aid="'+x.s.id+'"><div class="nm">'+esc(x.s.name)+'<span class="tag">'+x.n+' جمعات</span></div><div class="sub">'+esc(sec(x.s.section).i+' '+sec(x.s.section).n)+(x.s.phone?' · 📞 '+esc(x.s.phone):'')+'</div><div class="acts"><button data-aact="acall">📞 اتصال</button><button data-aact="awa">💬 واتساب</button></div></div>'});
+h+='<div class="bt"><button id="mc">إغلاق</button></div>';openDlg(h);$('mc').onclick=closeDlg}
+
+function archDlg(){
+var h='<h3>📚 سجل الشهور السابقة</h3>';
+if(!S.archive.length)h+='<div class="empty" style="margin-top:20px">لا توجد شهور محفوظة بعد.<br>تُحفظ تلقائياً عند الضغط على "شهر جديد".</div>';
+for(var i=S.archive.length-1;i>=0;i--){var a=S.archive[i];
+h+='<div class="card" style="padding:10px"><div class="nm">'+esc(a.label)+'</div><div class="sub">'+a.servees.length+' مخدوم</div><div class="f" style="margin-top:8px"><select id="as'+i+'">'+secOpts('primary')+'</select></div><div class="acts"><button data-aact="apdf" data-i="'+i+'" class="pri">💬 PDF واتساب</button><button data-aact="apdf2" data-i="'+i+'">📤 تطبيق آخر</button><button data-aact="adel" data-i="'+i+'" class="dng">🗑</button></div></div>'}
+h+='<div class="bt"><button id="mc">إغلاق</button></div>';openDlg(h);$('mc').onclick=closeDlg}
+
+function setDlg(){
+var leads=[0,15,30,60,120,180];
+openDlg('<h3>🔔 إعدادات التنبيهات</h3>'+
+'<div class="f"><label>تنبيه قبل موعد الافتقاد</label><select id="sl">'+leads.map(function(m){return'<option value="'+m+'"'+(m===S.settings.lead?' selected':'')+'>'+(m===0?'بدون تنبيه مسبق':m===60?'قبلها بساعة':m===120?'قبلها بساعتين':m===180?'قبلها بـ 3 ساعات':'قبلها بـ '+m+' دقيقة')+'</option>'}).join('')+'</select></div>'+
+'<div class="f"><label>إشعار الصباح اليومي (عدد زيارات اليوم)</label><select id="sd"><option value="1"'+(S.settings.daily?' selected':'')+'>مفعّل</option><option value="0"'+(S.settings.daily?'':' selected')+'>متوقف</option></select></div>'+
+'<div class="f"><label>وقت إشعار الصباح</label><input id="st" type="time" value="'+esc(S.settings.dailyTime)+'"></div>'+
+'<div class="sub">التنبيهات تصل كرسالة عادية بصوت واهتزاز الإشعارات.</div>'+
+'<div class="bt"><button id="ss" class="pri">حفظ</button><button id="sc2">إلغاء</button></div>');
+$('sc2').onclick=closeDlg;
+$('ss').onclick=function(){S.settings.lead=+$('sl').value;S.settings.daily=$('sd').value==='1';S.settings.dailyTime=$('st').value||'08:00';save();resync();closeDlg();toast('تم حفظ الإعدادات ✔')}}
+
+function resync(){
+if(!A)return;
+natq('cancelAllAlarms');
+S.servees.forEach(function(s){if(s.alarmAt>Date.now()&&s.status!=='done')natq('scheduleVisit',String(s.id),String(s.alarmAt),s.name,s.address||'—',s.phone||'—',String(S.settings.lead))});
+var t=(S.settings.dailyTime||'08:00').split(':');
+natq('setDaily',S.settings.daily?'1':'0',String(parseInt(t[0],10)||8),String(parseInt(t[1],10)||0))}
+
+function doBackup(){
+var name='نسخة_افتقاد_'+new Date().toISOString().slice(0,10)+'.json';
+if(nat('exportBackup',JSON.stringify(S),name)){S.settings.lastBackup=Date.now();save();render()}}
+window.onBackupData=function(b64){
+try{
+var txt=new TextDecoder('utf-8').decode(Uint8Array.from(atob(b64),function(c){return c.charCodeAt(0)}));
+var o=JSON.parse(txt);
+if(!o||!o.servees||!Array.isArray(o.servees))throw new Error('bad');
+ask('سيتم <b>استبدال كل البيانات الحالية</b> بالنسخة الاحتياطية ('+o.servees.length+' مخدوم). هل تريد المتابعة؟',function(){
+S=o;if(!S.archive)S.archive=[];if(!S.settings)S.settings={};
+S.next=S.next||(S.servees.reduce(function(m,s){return Math.max(m,s.id)},0)+1);
+var st=S.settings;if(st.lead==null)st.lead=60;if(st.daily==null)st.daily=true;if(!st.dailyTime)st.dailyTime='08:00';if(!st.lastBackup)st.lastBackup=0;
+save();resync();render();toast('تم استرجاع النسخة الاحتياطية ✔')},'استرجاع')
+}catch(e){toast('الملف غير صالح')}};
+
+/* ---------- events ---------- */
 $('list').addEventListener('click',function(ev){
+var t=ev.target.closest('[data-top]');if(t){if(t.getAttribute('data-top')==='backup')doBackup();return}
 var b=ev.target.closest('[data-act]');if(!b)return;var c=b.closest('.card');var s=get(+c.getAttribute('data-id'));if(!s)return;
 var a=b.getAttribute('data-act');
 if(a==='pil'){var w=+b.getAttribute('data-w'),k=b.getAttribute('data-k');s.p[w][k]=((s.p[w][k]||0)+1)%3;save();render()}
 else if(a==='att'){var w2=+b.getAttribute('data-w');s.att[w2]=((s.att[w2]||0)+1)%3;save();render()}
-else if(a==='stat'){s.status=s.status==='done'?'wait':'done';save();render()}
+else if(a==='stat'){
+if(s.status==='done'){s.status='wait';if(s.alarmAt>Date.now())natq('scheduleVisit',String(s.id),String(s.alarmAt),s.name,s.address||'—',s.phone||'—',String(S.settings.lead))}
+else{s.status='done';natq('cancelAlarm',String(s.id))}
+save();render()}
 else if(a==='call'){if(!s.phone)toast('لا يوجد رقم هاتف');else nat('dial',ar(s.phone))}
 else if(a==='wa'){var n=waNum(s.phone);if(!n)toast('لا يوجد رقم هاتف');else nat('openUrl','https://wa.me/'+n)}
 else if(a==='edit')formDlg(s);
 else if(a==='note')noteDlg(s);
 else if(a==='alarm')alarmDlg(s);
-else if(a==='del')ask('حذف <b>'+esc(s.name)+'</b> نهائياً؟',function(){if(s.alarmAt)nat('cancelAlarm',String(s.id));S.servees=S.servees.filter(function(x){return x.id!==s.id});save();render()},'حذف')});
+else if(a==='del')ask('حذف <b>'+esc(s.name)+'</b> نهائياً؟',function(){natq('cancelAlarm',String(s.id));S.servees=S.servees.filter(function(x){return x.id!==s.id});save();render()},'حذف')});
+$('box').addEventListener('click',function(ev){
+var m=ev.target.closest('[data-m]');
+if(m){var k=m.getAttribute('data-m');
+if(k==='abs')absDlg();else if(k==='arch')archDlg();else if(k==='bk'){closeDlg();doBackup()}
+else if(k==='rs'){closeDlg();nat('pickBackup')}else if(k==='set')setDlg();return}
+var x=ev.target.closest('[data-aact]');if(!x)return;
+var act=x.getAttribute('data-aact');
+if(act==='acall'||act==='awa'){var sv=get(+x.closest('[data-aid]').getAttribute('data-aid'));if(!sv)return;
+if(!sv.phone){toast('لا يوجد رقم هاتف');return}
+if(act==='acall')nat('dial',ar(sv.phone));else{var n=waNum(sv.phone);if(n)nat('openUrl','https://wa.me/'+n)}return}
+var i=+x.getAttribute('data-i');var ar2=S.archive[i];if(!ar2)return;
+if(act==='apdf'||act==='apdf2'){var k2=$('as'+i).value;closeDlg();sendReport(k2,ar2.servees.filter(function(s){return s.section===k2}),ar2.label,act==='apdf'?'wa':'any')}
+else if(act==='adel'){ask('حذف شهر <b>'+esc(ar2.label)+'</b> من السجل نهائياً؟',function(){S.archive.splice(i,1);save();archDlg()},'حذف')}});
 $('nav').addEventListener('click',function(ev){var b=ev.target.closest('[data-sec]');if(!b)return;cur=b.getAttribute('data-sec');sub='att';render();$('list').scrollTop=0});
 $('subtabs').addEventListener('click',function(ev){var b=ev.target.closest('[data-sub]');if(!b)return;sub=b.getAttribute('data-sub');render()});
 $('search').addEventListener('input',function(){q=this.value;render()});
 $('fab').onclick=function(){formDlg(null)};
-$('bNew').onclick=newMonth;$('bPdf').onclick=pdfDlg;
-render();
+$('bNew').onclick=newMonth;$('bPdf').onclick=pdfDlg;$('bMenu').onclick=menuDlg;
+render();resync();
 setTimeout(function(){var sp=$('splash');sp.style.opacity='0';setTimeout(function(){sp.style.display='none'},650)},1300);
 </script>
 </body>
