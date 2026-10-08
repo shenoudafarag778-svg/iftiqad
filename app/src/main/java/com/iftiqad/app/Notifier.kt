@@ -41,11 +41,11 @@ object Notifier {
     fun timeText(t: Long): String =
         SimpleDateFormat("h:mm a", Locale("ar")).format(Date(t))
 
-    fun post(c: Context, id: Int, title: String, text: String, big: String) {
+    fun post(c: Context, id: Int, title: String, text: String, big: String, tab: String = "today") {
         ensureChannel(c)
         val open = Intent(c, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            putExtra("open_today", true)
+            putExtra("open_tab", tab)
         }
         val pi = PendingIntent.getActivity(
             c, id, open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -86,6 +86,33 @@ object Notifier {
             }
         } finally {
             AlarmStore.scheduleNextDaily(c)
+        }
+    }
+
+    fun birthdays(c: Context) {
+        try {
+            val p = c.getSharedPreferences("iftiqad_alarms", Context.MODE_PRIVATE)
+            val today = java.util.Calendar.getInstance()
+            val tomorrow = java.util.Calendar.getInstance()
+            tomorrow.add(java.util.Calendar.DAY_OF_YEAR, 1)
+            val t = AlarmStore.birthdaysOn(c, today)
+            if (t.isNotEmpty()) {
+                post(
+                    c, AlarmStore.BD_RC, "🎂 عيد ميلاد النهارده",
+                    t.joinToString("، "), t.joinToString("\n"), "bday"
+                )
+            }
+            if (p.getBoolean("bd_pre", false)) {
+                val n = AlarmStore.birthdaysOn(c, tomorrow)
+                if (n.isNotEmpty()) {
+                    post(
+                        c, AlarmStore.BD_RC + 1, "🎁 بكرة عيد ميلاد",
+                        n.joinToString("، "), n.joinToString("\n"), "bday"
+                    )
+                }
+            }
+        } finally {
+            AlarmStore.scheduleNextBd(c)
         }
     }
 

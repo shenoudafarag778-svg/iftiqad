@@ -37,6 +37,7 @@ input,select,textarea{font-family:inherit;width:100%;background:#0b1220;color:va
 .tg.t{font-size:14px}
 .tag{background:rgba(239,68,68,.2);color:var(--bad);border-radius:8px;font-size:11px;padding:2px 6px;margin-inline-start:6px;font-weight:600}
 .card{background:var(--card);border:1px solid var(--line);border-right:4px solid var(--acc);border-radius:16px;padding:12px;margin-bottom:10px}
+.card.gold{border-color:var(--gold);background:rgba(245,197,66,.08)}
 .hd{display:flex;gap:10px;align-items:center}
 .av{width:40px;height:40px;border-radius:50%;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;flex:none}
 .nm{font-size:17px;font-weight:700}
@@ -52,11 +53,19 @@ input,select,textarea{font-family:inherit;width:100%;background:#0b1220;color:va
 .stats span{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 10px;font-size:12px}
 .banner{background:rgba(245,197,66,.1);border:1px solid var(--gold);border-radius:14px;padding:10px;margin-bottom:10px;font-size:13px;display:flex;gap:8px;align-items:center}
 .banner span{flex:1;line-height:1.6}
+.mnav{display:grid;grid-template-columns:90px 1fr 90px;gap:8px;align-items:center;margin-bottom:10px}
+.mnav .mt{text-align:center;font-weight:700;font-size:17px;color:var(--acc)}
+.bdr{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-right:4px solid var(--acc);border-radius:14px;padding:8px;margin-bottom:8px}
+.bdr.today{border-color:var(--gold);background:rgba(245,197,66,.10)}
+.bdr.past{opacity:.55}
+.bdr2{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:8px}
+.dy{width:40px;height:40px;border-radius:50%;background:var(--acc);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:17px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 nav{display:flex;border-top:1px solid var(--line);background:#0b1220}
-nav button{flex:1;border:0;border-radius:0;background:transparent;padding:8px 2px;font-size:11px;color:var(--mut);line-height:1.3;position:relative}
-nav button i{display:block;font-style:normal;font-size:18px}
+nav button{flex:1;border:0;border-radius:0;background:transparent;padding:6px 1px;font-size:10px;color:var(--mut);line-height:1.25;position:relative}
+nav button i{display:block;font-style:normal;font-size:17px}
 nav button.on{color:var(--acc);font-weight:700;box-shadow:inset 0 3px 0 var(--acc)}
-nav button b{position:absolute;top:2px;left:50%;margin-left:6px;background:var(--bad);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;min-width:16px}
+nav button b{position:absolute;top:1px;left:50%;margin-left:5px;background:var(--bad);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;min-width:16px}
 #fab{position:fixed;left:16px;bottom:76px;background:var(--acc);border:0;color:#fff;font-size:15px;font-weight:700;padding:13px 18px;border-radius:30px;box-shadow:0 6px 18px rgba(0,0,0,.5)}
 #dlg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:14px;z-index:50}
 #dlg .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;width:100%;max-width:440px;max-height:92%;overflow-y:auto}
@@ -110,32 +119,39 @@ nav button b{position:absolute;top:2px;left:50%;margin-left:6px;background:var(-
 <div id="dlg"><div class="box" id="box"></div></div>
 <div id="toast"></div>
 <script>
+var MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var DIM=[31,29,31,30,31,30,31,31,30,31,30,31];
+var PL_P=[['mass','قداس'],['comm','خدمة'],['conf','اعتراف'],['pray','صلاة']];
+var PL_E=[['mass','قداس'],['comm','اجتماع'],['conf','اعتراف'],['pray','صلاة']];
+var KEYS=['mass','comm','conf','pray'];
+function PL(k){return k==='prep'?PL_E:PL_P}
 var SECTIONS=[
 {k:'primary',n:'ابتدائي',t:'ابتدائي (مدارس الأحد)',f:'خدمة ابتدائي (مدارس الأحد)',kind:'p',c:'#3B82F6',i:'🧒'},
 {k:'prep',n:'إعدادي وثانوي',t:'إعدادي وثانوي',f:'اجتماع إعدادي وثانوي',kind:'p',c:'#8B5CF6',i:'🎓'},
 {k:'women',n:'سيدات',t:'اجتماع سيدات',f:'اجتماع سيدات',kind:'d',c:'#EC4899',i:'👩'},
 {k:'general',n:'عام',t:'اجتماع عام',f:'اجتماع عام',kind:'d',c:'#14B8A6',i:'👥'}];
 var TODAY={k:'today',n:'اليوم',t:'زيارات اليوم',f:'زيارات اليوم',kind:'t',c:'#F59E0B',i:'📅'};
-var PILLARS=[['mass','قداس'],['comm','تناول'],['conf','اعتراف'],['pray','صلاة']];
+var BDAY={k:'bday',n:'أعياد الميلاد',t:'أعياد الميلاد 🎂',f:'أعياد الميلاد',kind:'b',c:'#F472B6',i:'🎂'};
+var GREET='كل سنة وانت طيب، عيد ميلاد سعيد، ربنا يبارك في حياتك 🎂';
 var A=window.Android;
-var S=load(),cur='primary',sub='att',q='',wk=Math.min(3,Math.floor((new Date().getDate()-1)/7)),sheetId=0;
-if(location.hash==='#today')cur='today';
+var S=load(),cur='primary',sub='att',q='',wk=Math.min(3,Math.floor((new Date().getDate()-1)/7)),sheetId=0,bm=new Date().getMonth()+1;
+var hs=location.hash.slice(1);if(hs==='today'||hs==='bday')cur=hs;
 
 function load(){var d=null;try{d=JSON.parse(localStorage.getItem('iftiqad_v1'))}catch(e){}
 if(!d||!d.servees)d={next:1,servees:[]};
 if(!d.archive)d.archive=[];
 if(!d.settings)d.settings={};
 var st=d.settings;if(st.lead==null)st.lead=60;if(st.daily==null)st.daily=true;if(!st.dailyTime)st.dailyTime='08:00';
+if(st.bd==null)st.bd=true;if(st.bdPre==null)st.bdPre=true;if(!st.bdTime)st.bdTime='09:00';
 return d}
 function save(){try{localStorage.setItem('iftiqad_v1',JSON.stringify(S))}catch(e){}}
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function get(id){for(var i=0;i<S.servees.length;i++)if(S.servees[i].id===id)return S.servees[i]}
-function sec(k){k=k||cur;var a=SECTIONS.concat([TODAY]);for(var i=0;i<a.length;i++)if(a[i].k===k)return a[i]}
+function sec(k){k=k||cur;var a=SECTIONS.concat([TODAY,BDAY]);for(var i=0;i<a.length;i++)if(a[i].k===k)return a[i]}
 function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){t.style.display='none'},3200)}
 function nat(fn){if(A&&A[fn]){var a=Array.prototype.slice.call(arguments,1);try{A[fn].apply(A,a)}catch(e){toast('حدث خطأ')};return true}toast('هذه الميزة تعمل داخل التطبيق فقط');return false}
 function natq(fn){if(A&&A[fn]){try{A[fn].apply(A,Array.prototype.slice.call(arguments,1))}catch(e){}}}
-function sym(v){return v==1?'√':v==2?'×':''}
 function ar(d){return String(d||'').replace(/[٠-٩]/g,function(x){return x.charCodeAt(0)-1632})}
 function waNum(p){var n=ar(p).replace(/[^\d]/g,'');if(!n)return'';if(n.indexOf('00')===0)n=n.slice(2);else if(n.charAt(0)==='0')n='20'+n.slice(1);return n}
 function fmt(ms){try{return new Date(ms).toLocaleString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'numeric',minute:'2-digit'})}catch(e){return new Date(ms).toLocaleString()}}
@@ -145,18 +161,28 @@ function monthLabel(){try{return new Date().toLocaleDateString('ar-EG',{month:'l
 function isToday(ms){return ms>0&&new Date(ms).toDateString()===new Date().toDateString()}
 function status(){try{return A&&A.getStatus?JSON.parse(A.getStatus()):null}catch(e){return null}}
 function tgTxt(v){return v==1?'✔':v==2?'✕':'○'}
+function bdText(s){return(s.bday&&s.bmon)?s.bday+' '+MONTHS[s.bmon-1]:''}
+function bdToday(s){
+if(!s.bday||!s.bmon)return false;
+var n=new Date(),d=n.getDate(),m=n.getMonth()+1,y=n.getFullYear();
+var leap=(y%4===0&&y%100!==0)||y%400===0;
+return(s.bday===d&&s.bmon===m)||(s.bday===29&&s.bmon===2&&!leap&&d===28&&m===2)}
+function firstName(s){return String(s.name||'').trim().split(/\s+/)[0]}
+function msgVisit(s){return'سلام ونعمة يا '+firstName(s)+'، فينك النهاردة؟ ان شاء الله تكون بخير ومستنيين نشوفك المرة الجاية.'}
+function openWa(s,msg){var n=waNum(s.phone);if(!n){toast('لا يوجد رقم هاتف');return}nat('openUrl','https://wa.me/'+n+'?text='+encodeURIComponent(msg))}
+function schedVisit(s){natq('scheduleVisit',String(s.id),String(s.alarmAt),s.name,s.phone||'—',String(S.settings.lead))}
 
-function newServee(section,name,phone,address){
-var s={id:S.next++,section:section,name:name,phone:phone,address:address,notes:'',p:[{},{},{},{}],att:[0,0,0,0],status:'wait',alarmAt:0};
+function newServee(section,name,phone,bday,bmon){
+var s={id:S.next++,section:section,name:name,phone:phone,bday:bday,bmon:bmon,notes:'',p:[{},{},{},{}],att:[0,0,0,0],status:'wait',alarmAt:0};
 S.servees.push(s);return s}
 
 /* ---------- stats / absentees ---------- */
-function pillarStats(L){return PILLARS.map(function(pl){var ok=0,tot=0;L.forEach(function(s){for(var w=0;w<4;w++){var v=s.p[w][pl[0]]||0;if(v==1){ok++;tot++}else if(v==2)tot++}});return{n:pl[1],ok:ok,tot:tot}})}
+function pillarStats(L,k){return PL(k).map(function(pl){var ok=0,tot=0;L.forEach(function(s){for(var w=0;w<4;w++){var v=s.p[w][pl[0]]||0;if(v==1){ok++;tot++}else if(v==2)tot++}});return{n:pl[1],ok:ok,tot:tot}})}
 function attStats(L){var ok=0,tot=0;L.forEach(function(s){s.att.forEach(function(v){if(v==1){ok++;tot++}else if(v==2)tot++})});return{ok:ok,tot:tot}}
 function pct(ok,tot){return tot?Math.round(ok*100/tot)+'%':'—'}
 function ws(rec,kind,w){
 if(!rec)return'none';
-if(kind==='p'){var any=0,miss=0;PILLARS.forEach(function(pl){var v=(rec.p[w]||{})[pl[0]]||0;if(v==1)any=1;if(v==2)miss=1});return any?'ok':miss?'miss':'none'}
+if(kind==='p'){var any=0,miss=0;KEYS.forEach(function(k){var v=(rec.p[w]||{})[k]||0;if(v==1)any=1;if(v==2)miss=1});return any?'ok':miss?'miss':'none'}
 var v2=(rec.att||[])[w]||0;return v2==1?'ok':v2==2?'miss':'none'}
 function streak(s){
 var kind=sec(s.section).kind;var seq=[];
@@ -172,7 +198,7 @@ function todayList(){var l=S.servees.filter(function(s){return isToday(s.alarmAt
 function nameBtn(s){var n=streak(s);return'<button class="nb" data-act="open">'+esc(s.name)+(n>=2?'<span class="tag">غايب '+n+'</span>':'')+(s.phone?'<small>'+esc(s.phone)+'</small>':'')+'</button>'}
 function rowP(s){
 var h='<div class="r" data-id="'+s.id+'">'+nameBtn(s);
-PILLARS.forEach(function(pl){var v=s.p[wk][pl[0]]||0;h+='<button class="tg s'+v+'" data-act="pil" data-k="'+pl[0]+'">'+tgTxt(v)+'</button>'});
+PL(s.section).forEach(function(pl){var v=s.p[wk][pl[0]]||0;h+='<button class="tg s'+v+'" data-act="pil" data-k="'+pl[0]+'">'+tgTxt(v)+'</button>'});
 return h+'</div>'}
 function rowD(s){
 var v=s.att[wk]||0;
@@ -182,7 +208,7 @@ return'<div class="r d" data-id="'+s.id+'">'+nameBtn(s)+
 function visCard(s,mode){
 var n=streak(s);
 var h='<div class="card" data-id="'+s.id+'"><div class="hd"><div class="av">'+esc(s.name.charAt(0))+'</div><div style="flex:1"><div class="nm">'+esc(s.name)+(n>=2?'<span class="tag">غايب '+n+'</span>':'')+'</div>';
-var info=[];if(mode==='today')info.push(sec(s.section).i+' '+esc(sec(s.section).n));if(s.phone)info.push('📞 '+esc(s.phone));if(s.address)info.push('📍 '+esc(s.address));
+var info=[];if(mode==='today')info.push(sec(s.section).i+' '+esc(sec(s.section).n));if(s.phone)info.push('📞 '+esc(s.phone));
 if(info.length)h+='<div class="sub">'+info.join(' &nbsp;·&nbsp; ')+'</div>';
 h+='</div>';
 if(mode==='today')h+='<div class="tm">'+esc(fmtT(s.alarmAt))+'</div>';
@@ -194,24 +220,44 @@ h+='<button class="stat '+s.status+'" data-act="stat">'+(s.status==='done'?'تم
 h+='<div class="acts3"><button data-act="call">📞 اتصال</button><button data-act="wa">💬 واتساب</button><button data-act="alarm">⏰ موعد</button><button data-act="open">⋯</button></div></div>';
 return h}
 
+function bdView(ql){
+var h='';var now=new Date();var curM=now.getMonth()+1;
+var bt=S.servees.filter(bdToday);
+if(bt.length){h+='<div class="card gold"><div class="nm">🎂 عيد ميلاد النهارده</div>';
+bt.forEach(function(s){h+='<div class="bdr2" data-id="'+s.id+'"><button class="nb" data-act="open">'+esc(s.name)+'<small>'+esc(sec(s.section).i+' '+sec(s.section).n)+'</small></button><button class="pri" data-act="greet">🎉 تهنئة واتساب</button></div>'});
+h+='</div>'}
+h+='<div class="mnav"><button data-bm="-1">▶ السابق</button><div class="mt">'+MONTHS[bm-1]+(bm===curM?'<div class="sub">الشهر الحالي</div>':'')+'</div><button data-bm="1">التالي ◀</button></div>';
+var list=S.servees.filter(function(s){return s.bday&&s.bmon===bm&&(!ql||s.name.toLowerCase().indexOf(ql)>-1)});
+list.sort(function(a,b){return a.bday-b.bday});
+if(!list.length)h+='<div class="empty" style="margin-top:30px">لا يوجد أعياد ميلاد في شهر '+MONTHS[bm-1]+'</div>';
+else{h+='<div class="stats"><span>🎂 '+list.length+' عيد ميلاد في '+MONTHS[bm-1]+'</span></div>';
+list.forEach(function(s){var cls='bdr'+(bdToday(s)?' today':(bm===curM&&s.bday<now.getDate()?' past':''));
+h+='<div class="'+cls+'" data-id="'+s.id+'"><div class="dy">'+s.bday+'</div><button class="nb" data-act="open">'+esc(s.name)+'<small>'+esc(sec(s.section).i+' '+sec(s.section).n)+(s.phone?' · '+esc(s.phone):'')+'</small></button><button data-act="greet">🎉</button></div>'})}
+var miss=S.servees.filter(function(s){return!(s.bday&&s.bmon)}).length;
+if(miss)h+='<div class="sub" style="text-align:center;margin-top:14px">لم يُسجَّل تاريخ ميلاد لـ '+miss+' مخدوم (من تعديل بيانات المخدوم)</div>';
+return h}
+
 function render(){
 var sc=sec();
 document.documentElement.style.setProperty('--acc',sc.c);
 $('ttl').textContent=sc.t;
 var tl=todayList();var pend=tl.filter(function(s){return s.status!=='done'}).length;
-var nav='';SECTIONS.concat([TODAY]).forEach(function(x){nav+='<button data-sec="'+x.k+'" class="'+(x.k===cur?'on':'')+'"><i>'+x.i+'</i>'+x.n+(x.k==='today'&&pend?'<b>'+pend+'</b>':'')+'</button>'});$('nav').innerHTML=nav;
+var bcount=S.servees.filter(bdToday).length;
+var nav='';SECTIONS.concat([TODAY,BDAY]).forEach(function(x){var b=x.k==='today'?pend:(x.k==='bday'?bcount:0);nav+='<button data-sec="'+x.k+'" class="'+(x.k===cur?'on':'')+'"><i>'+x.i+'</i>'+x.n+(b?'<b>'+b+'</b>':'')+'</button>'});$('nav').innerHTML=nav;
 $('subtabs').style.display=sc.kind==='d'?'flex':'none';
 var weekly=sc.kind==='p'||(sc.kind==='d'&&sub==='att');
 $('wkbar').style.display=weekly?'flex':'none';
 var wb=$('wkbar').querySelectorAll('button');for(var j=0;j<wb.length;j++)wb[j].className=(+wb[j].getAttribute('data-wk')===wk)?'on':'';
-$('fab').style.display=sc.kind==='t'?'none':'block';
-$('bPdf').style.display=sc.kind==='t'?'none':'';
+var sp=sc.kind==='t'||sc.kind==='b';
+$('fab').style.display=sp?'none':'block';
+$('bPdf').style.display=sp?'none':'';
 var tb=$('subtabs').querySelectorAll('button');for(var i=0;i<tb.length;i++)tb[i].className=tb[i].getAttribute('data-sub')===sub?'on':'';
 var ql=q.trim().toLowerCase();
 var h='';
 var st=status();
 if(st&&!st.notif)h+='<div class="banner"><span>🔕 الإشعارات متوقفة، لن تصلك التنبيهات.</span><button data-top="notif">تفعيل</button></div>';
 var items;
+if(sc.kind==='b'){$('list').innerHTML=h+bdView(ql);return}
 if(sc.kind==='t'){
 items=tl.filter(function(s){return!ql||s.name.toLowerCase().indexOf(ql)>-1});
 if(!items.length){$('list').innerHTML=h+'<div class="empty">'+(ql?'لا توجد نتائج للبحث':'لا توجد زيارات مضبوطة لليوم<br>اضبط موعد افتقاد من "برنامج الافتقاد" وسيظهر هنا')+'</div>';return}
@@ -221,12 +267,12 @@ var all=S.servees.filter(function(s){return s.section===cur});
 items=all.filter(function(s){return!ql||s.name.toLowerCase().indexOf(ql)>-1});
 if(all.length){
 h+='<div class="stats"><span>👥 '+all.length+' مخدوم</span>';
-if(sc.kind==='p'){pillarStats(all).forEach(function(p){h+='<span>'+p.n+' '+pct(p.ok,p.tot)+'</span>'})}
+if(sc.kind==='p'){pillarStats(all,cur).forEach(function(p){h+='<span>'+p.n+' '+pct(p.ok,p.tot)+'</span>'})}
 else if(sub==='att'){var a=attStats(all);h+='<span>نسبة الحضور '+pct(a.ok,a.tot)+'</span>'}
 else{var d=all.filter(function(s){return s.status==='done'}).length;h+='<span>✔ تم الافتقاد '+d+' من '+all.length+'</span>'}
 h+='</div>'}
 if(!items.length){$('list').innerHTML=h+'<div class="empty">'+(ql?'لا توجد نتائج للبحث':'لا يوجد مخدومين في هذا القسم بعد<br>اضغط "＋ إضافة مخدوم" للبدء')+'</div>';return}
-if(sc.kind==='p'){h+='<div class="legend"><b>الاسم</b>'+PILLARS.map(function(pl){return'<b>'+pl[1]+'</b>'}).join('')+'</div>';items.forEach(function(s){h+=rowP(s)})}
+if(sc.kind==='p'){h+='<div class="legend"><b>الاسم</b>'+PL(cur).map(function(pl){return'<b>'+pl[1]+'</b>'}).join('')+'</div>';items.forEach(function(s){h+=rowP(s)})}
 else if(sub==='att'){h+='<div class="legend d"><b>الاسم</b><b>حاضر</b><b>غائب</b></div>';items.forEach(function(s){h+=rowD(s)})}
 else items.forEach(function(s){h+=visCard(s,'vis')})}
 $('list').innerHTML=h}
@@ -235,7 +281,8 @@ $('list').innerHTML=h}
 function openDlg(html){$('box').innerHTML=html;$('dlg').style.display='flex'}
 function closeDlg(){$('dlg').style.display='none';$('box').innerHTML='';sheetId=0}
 window.onBack=function(){if($('dlg').style.display==='flex'){closeDlg();return true}return false};
-window.goToday=function(){closeDlg();cur='today';render()};
+window.goTab=function(t){closeDlg();cur=t;render()};
+window.goToday=function(){window.goTab('today')};
 window.onResumeApp=function(){render()};
 function ask(msg,cb,okTxt){openDlg('<h3>تأكيد</h3><div style="line-height:1.8">'+msg+'</div><div class="bt"><button id="ko" class="pri">'+(okTxt||'نعم')+'</button><button id="kc">إلغاء</button></div>');
 $('ko').onclick=function(){closeDlg();cb()};$('kc').onclick=closeDlg}
@@ -243,12 +290,13 @@ $('ko').onclick=function(){closeDlg();cb()};$('kc').onclick=closeDlg}
 function sheetDlg(s){
 var keep=$('box').scrollTop;sheetId=s.id;
 var sc=sec(s.section);
-var h='<div class="hd"><div class="av">'+esc(s.name.charAt(0))+'</div><div style="flex:1"><div class="nm">'+esc(s.name)+'</div><div class="sub">'+esc(sc.i+' '+sc.n)+(s.phone?' · 📞 '+esc(s.phone):'')+(s.address?'<br>📍 '+esc(s.address):'')+'</div></div></div>';
+var h='<div class="hd"><div class="av">'+esc(s.name.charAt(0))+'</div><div style="flex:1"><div class="nm">'+esc(s.name)+'</div><div class="sub">'+esc(sc.i+' '+sc.n)+(s.phone?' · 📞 '+esc(s.phone):'')+(bdText(s)?'<br>🎂 '+esc(bdText(s)):'')+'</div></div></div>';
 h+='<div class="big4"><button data-sa="call">📞<span>اتصال</span></button><button data-sa="wa">💬<span>واتساب</span></button><button data-sa="edit">✏️<span>تعديل البيانات</span></button><button data-sa="note">📝<span>الملاحظات'+(s.notes?' •':'')+'</span></button></div>';
 h+='<button class="mi" data-sa="alarm">⏰ ضبط موعد الافتقاد'+(s.alarmAt>0?'<br><small style="color:var(--gold)">'+esc(fmtS(s.alarmAt))+'</small>':'')+'</button>';
 if(sc.kind==='p'){
-h+='<div class="mg"><h4>المتابعة الروحية خلال الشهر</h4><div class="mgr h"><b></b>'+PILLARS.map(function(pl){return'<b>'+pl[1]+'</b>'}).join('')+'</div>';
-for(var w=0;w<4;w++){h+='<div class="mgr"><b>جمعة '+(w+1)+'</b>';PILLARS.forEach(function(pl){var v=s.p[w][pl[0]]||0;h+='<button class="tg s'+v+'" data-sa="pil" data-w="'+w+'" data-k="'+pl[0]+'">'+tgTxt(v)+'</button>'});h+='</div>'}
+var pl=PL(s.section);
+h+='<div class="mg"><h4>المتابعة الروحية خلال الشهر</h4><div class="mgr h"><b></b>'+pl.map(function(p){return'<b>'+p[1]+'</b>'}).join('')+'</div>';
+for(var w=0;w<4;w++){h+='<div class="mgr"><b>جمعة '+(w+1)+'</b>';pl.forEach(function(p){var v=s.p[w][p[0]]||0;h+='<button class="tg s'+v+'" data-sa="pil" data-w="'+w+'" data-k="'+p[0]+'">'+tgTxt(v)+'</button>'});h+='</div>'}
 h+='</div>'}
 else{
 h+='<div class="mg"><h4>حضور الاجتماع خلال الشهر</h4>';
@@ -257,19 +305,24 @@ h+='</div>'}
 h+='<button class="mi dng" data-sa="del" style="margin-top:6px">🗑 حذف المخدوم</button><div class="bt"><button id="mc">إغلاق</button></div>';
 openDlg(h);$('mc').onclick=closeDlg;$('box').scrollTop=keep}
 
+function dayOpts(sel){var h='<option value="0">اليوم</option>';for(var i=1;i<=31;i++)h+='<option value="'+i+'"'+(i===sel?' selected':'')+'>'+i+'</option>';return h}
+function monOpts(sel){var h='<option value="0">الشهر</option>';for(var i=1;i<=12;i++)h+='<option value="'+i+'"'+(i===sel?' selected':'')+'>'+MONTHS[i-1]+'</option>';return h}
 function formDlg(s){
 var e=!!s;
 openDlg('<h3>'+(e?'تعديل بيانات المخدوم':'إضافة مخدوم')+'</h3>'+
 '<div class="f"><label>الاسم</label><input id="fn" value="'+esc(e?s.name:'')+'"></div>'+
 '<div class="f"><label>رقم الهاتف</label><input id="fp" type="tel" value="'+esc(e?s.phone:'')+'"></div>'+
-'<div class="f"><label>العنوان</label><input id="fa" value="'+esc(e?s.address:'')+'"></div>'+
+'<div class="f"><label>تاريخ الميلاد (اليوم والشهر)</label><div class="g2"><select id="fd">'+dayOpts(e?s.bday:0)+'</select><select id="fm">'+monOpts(e?s.bmon:0)+'</select></div></div>'+
 '<div class="bt"><button id="fs" class="pri">حفظ</button><button id="fc">إلغاء</button></div>');
 $('fc').onclick=closeDlg;
 $('fs').onclick=function(){var n=$('fn').value.trim();if(!n){toast('اكتب الاسم أولاً');return}
-if(e){s.name=n;s.phone=ar($('fp').value.trim());s.address=$('fa').value.trim();
-if(s.alarmAt>Date.now()&&s.status!=='done')natq('scheduleVisit',String(s.id),String(s.alarmAt),s.name,s.address||'—',s.phone||'—',String(S.settings.lead))}
-else newServee(cur,n,ar($('fp').value.trim()),$('fa').value.trim());
-save();closeDlg();render()}}
+var d=+$('fd').value,m=+$('fm').value;
+if((d&&!m)||(!d&&m)){toast('اختر اليوم والشهر معاً');return}
+if(d&&d>DIM[m-1]){toast('هذا اليوم غير موجود في الشهر المختار');return}
+if(e){s.name=n;s.phone=ar($('fp').value.trim());s.bday=d;s.bmon=m;
+if(s.alarmAt>Date.now()&&s.status!=='done')schedVisit(s)}
+else newServee(cur,n,ar($('fp').value.trim()),d,m);
+save();syncBd();closeDlg();render()}}
 
 function noteDlg(s){
 openDlg('<h3>ملاحظات روحية: '+esc(s.name)+'</h3><textarea id="nt" rows="8" placeholder="دوّن الملاحظات هنا...">'+esc(s.notes)+'</textarea><div class="bt"><button id="ns" class="pri">حفظ</button><button id="nc">إغلاق</button></div>');
@@ -296,38 +349,38 @@ if(!yr||yr<2000||yr>2100){toast('اكتب سنة صحيحة');return}
 var h24=hr%12+(isPm?12:0);var dt=new Date(yr,mo-1,day,h24,mi,0,0);
 if(dt.getDate()!==day||dt.getMonth()!==mo-1){toast('هذا التاريخ غير موجود في الشهر');return}
 if(dt.getTime()<=Date.now()){toast('اختر موعداً في المستقبل');return}
-if(!nat('scheduleVisit',String(s.id),String(dt.getTime()),s.name,s.address||'—',s.phone||'—',String(S.settings.lead)))return;
+if(!nat('scheduleVisit',String(s.id),String(dt.getTime()),s.name,s.phone||'—',String(S.settings.lead)))return;
 s.alarmAt=dt.getTime();s.status='wait';save();closeDlg();render();toast('تم ضبط الموعد ✔ سيصلك إشعار في وقته')}}
 
 /* ---------- reports (PDF) ---------- */
 function reportSpec(k,L,label){
 var sc=sec(k);
-var spec={title:'كشف '+sc.f,sub:'الشهر: '+label+'   —   تاريخ الإصدار: '+new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}),summary:['عدد المخدومين: '+L.length],tables:[]};
+var spec={accent:sc.c,title:'كشف '+sc.f,sub:'الشهر: '+label+'   •   تاريخ الإصدار: '+new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}),stats:[{v:String(L.length),l:'عدد المخدومين'}],tables:[]};
 if(sc.kind==='p'){
-spec.summary.push('نسبة الإنجاز: '+pillarStats(L).map(function(p){return p.n+' '+pct(p.ok,p.tot)}).join('   |   '));
-var cols=[3.4],h1=[{t:''}],h2=[{t:'الاسم'}];
-for(var w=0;w<4;w++){h1.push({t:'جمعة '+(w+1),s:4});PILLARS.forEach(function(pl){h2.push({t:pl[1]});cols.push(1)})}
+pillarStats(L,k).forEach(function(p){spec.stats.push({v:pct(p.ok,p.tot),l:'نسبة '+p.n})});
+var pl=PL(k);var cols=[3.4],h1=[{t:'الاسم'}],h2=[{t:''}];
+for(var w=0;w<4;w++){h1.push({t:'جمعة '+(w+1),s:4});pl.forEach(function(p){h2.push({t:p[1]});cols.push(1)})}
 var rows=[];
-L.forEach(function(s){var r=[{t:s.name,a:'r'}];for(var w2=0;w2<4;w2++)PILLARS.forEach(function(pl){var v=s.p[w2][pl[0]]||0;r.push({t:sym(v),bg:v==1?'g':v==2?'r':''})});rows.push(r)});
+L.forEach(function(s){var r=[{t:s.name,a:'r'}];for(var w2=0;w2<4;w2++)pl.forEach(function(p){var v=s.p[w2][p[0]]||0;r.push({t:'',k:v==1?'ok':v==2?'no':''})});rows.push(r)});
 if(!rows.length)rows.push([{t:'لا يوجد مخدومين',s:17}]);
-spec.tables.push({heading:'المتابعة الروحية الأسبوعية',cols:cols,head:[h1,h2],rows:rows,fs:8,foot:'الرموز:  √ تم   ×  لم يتم   (فارغ = لم يُسجَّل)'})
+spec.tables.push({heading:'المتابعة الروحية الأسبوعية',cols:cols,head:[h1,h2],rows:rows,fs:8,grp:4,foot:'الخانة الخضراء (علامة صح) = تم   |   الخانة الحمراء (علامة ×) = لم يتم   |   الخانة الفارغة = لم يُسجَّل'})
 }else{
 var a=attStats(L);var done=L.filter(function(s){return s.status==='done'}).length;
-spec.summary.push('نسبة الحضور: '+pct(a.ok,a.tot)+'   |   تم الافتقاد: '+done+' من '+L.length);
+spec.stats.push({v:pct(a.ok,a.tot),l:'نسبة الحضور'});spec.stats.push({v:done+' / '+L.length,l:'تم الافتقاد'});
 var r1=[];L.forEach(function(s){var cnt=s.att.filter(function(v){return v==1}).length;
-r1.push([{t:s.name,a:'r'}].concat(s.att.map(function(v){return{t:v==1?'حاضر':v==2?'غائب':'',bg:v==1?'g':v==2?'r':''}}),[{t:cnt+' / 4'}]))});
+r1.push([{t:s.name,a:'r'}].concat(s.att.map(function(v){return{t:v==1?'حاضر':v==2?'غائب':'',bg:v==1?'g':v==2?'r':''}}),[{t:cnt+' / 4',b:true}]))});
 if(!r1.length)r1.push([{t:'لا يوجد مخدومين',s:6}]);
 spec.tables.push({heading:'كشف حضور الاجتماع',cols:[3,1,1,1,1,1.2],head:[[{t:'الاسم'},{t:'جمعة 1'},{t:'جمعة 2'},{t:'جمعة 3'},{t:'جمعة 4'},{t:'مرات الحضور'}]],rows:r1,fs:9});
-var r2=[];L.forEach(function(s){r2.push([{t:s.name,a:'r'},{t:s.phone||'—'},{t:s.address||'—',a:'r'},{t:s.alarmAt?fmtS(s.alarmAt):'—'},{t:s.status==='done'?'تم الافتقاد':'في الانتظار',bg:s.status==='done'?'g':'y'}])});
-if(!r2.length)r2.push([{t:'لا يوجد مخدومين',s:5}]);
-spec.tables.push({heading:'خطة وبرنامج الافتقاد',cols:[2.2,1.6,3,2.6,1.6],head:[[{t:'الاسم'},{t:'الهاتف'},{t:'العنوان'},{t:'موعد الزيارة'},{t:'الحالة'}]],rows:r2,fs:9})}
+var r2=[];L.forEach(function(s){r2.push([{t:s.name,a:'r'},{t:s.phone||'—'},{t:s.alarmAt?fmtS(s.alarmAt):'—'},{t:s.status==='done'?'تم الافتقاد':'في الانتظار',bg:s.status==='done'?'g':'y'}])});
+if(!r2.length)r2.push([{t:'لا يوجد مخدومين',s:4}]);
+spec.tables.push({heading:'خطة وبرنامج الافتقاد',cols:[3,1.8,3.2,1.8],head:[[{t:'الاسم'},{t:'الهاتف'},{t:'موعد الزيارة'},{t:'الحالة'}]],rows:r2,fs:9})}
 return spec}
 function sendReport(k,L,label,target){
 var sc=sec(k);var name='كشف_'+sc.n.replace(/\s+/g,'_')+'_'+label.replace(/\s+/g,'_')+'.pdf';
 nat('sharePdf',JSON.stringify(reportSpec(k,L,label)),name,target)}
 function secOpts(def){var h='';SECTIONS.forEach(function(x){h+='<option value="'+x.k+'"'+(x.k===def?' selected':'')+'>'+x.f+'</option>'});return h}
 function pdfDlg(){
-var def=cur==='today'?'primary':cur;
+var def=SECTIONS.some(function(x){return x.k===cur})?cur:'primary';
 openDlg('<h3>📄 كشف PDF</h3><div class="f"><label>اختر الخدمة</label><select id="sc">'+secOpts(def)+'</select></div>'+
 '<div class="sub">يتم إنشاء ملف PDF منظم للخدمة المختارة فقط.</div>'+
 '<div class="bt"><button id="pw" class="pri">💬 إرسال PDF عبر واتساب</button></div>'+
@@ -337,9 +390,9 @@ $('pc').onclick=closeDlg;$('pw').onclick=function(){go('wa')};$('pa').onclick=fu
 
 /* ---------- month / archive ---------- */
 function newMonth(){
-ask('سيتم حفظ نسخة من الشهر الحالي في "سجل الشهور"، ثم تصفير علامات الحضور والافتقاد وحذف المواعيد.<br><b>الأسماء والهواتف والعناوين والملاحظات تبقى كما هي.</b><div class="f" style="margin-top:10px"><label>اسم الشهر المحفوظ</label><input id="ml" value="'+esc(monthLabel())+'"></div>',function(){
+ask('سيتم حفظ نسخة من الشهر الحالي في "سجل الشهور"، ثم تصفير علامات الحضور والافتقاد وحذف المواعيد.<br><b>الأسماء والهواتف وتواريخ الميلاد والملاحظات تبقى كما هي.</b><div class="f" style="margin-top:10px"><label>اسم الشهر المحفوظ</label><input id="ml" value="'+esc(monthLabel())+'"></div>',function(){
 var lbl=($('ml')&&$('ml').value.trim())||monthLabel();
-S.archive.push({ts:Date.now(),label:lbl,servees:S.servees.map(function(s){return{id:s.id,section:s.section,name:s.name,phone:s.phone,address:s.address,p:s.p,att:s.att,status:s.status,alarmAt:s.alarmAt}})});
+S.archive.push({ts:Date.now(),label:lbl,servees:S.servees.map(function(s){return{id:s.id,section:s.section,name:s.name,phone:s.phone,p:s.p,att:s.att,status:s.status,alarmAt:s.alarmAt}})});
 S.servees.forEach(function(s){s.p=[{},{},{},{}];s.att=[0,0,0,0];s.status='wait';s.alarmAt=0});
 natq('cancelAllAlarms');save();render();toast('بدأ شهر جديد ✔')},'نعم، شهر جديد')}
 
@@ -366,6 +419,7 @@ for(var i=S.archive.length-1;i>=0;i--){var a=S.archive[i];
 h+='<div class="card" style="padding:10px"><div class="nm">'+esc(a.label)+'</div><div class="sub">'+a.servees.length+' مخدوم</div><div class="f" style="margin-top:8px"><select id="as'+i+'">'+secOpts('primary')+'</select></div><div class="bt" style="margin-top:0"><button data-aact="apdf" data-i="'+i+'" class="pri">💬 PDF واتساب</button><button data-aact="apdf2" data-i="'+i+'">📤 آخر</button><button data-aact="adel" data-i="'+i+'" class="dng" style="flex:0 0 46px">🗑</button></div></div>'}
 h+='<div class="bt"><button id="mc">إغلاق</button></div>';openDlg(h);$('mc').onclick=closeDlg}
 
+function onOff(id,v){return'<select id="'+id+'"><option value="1"'+(v?' selected':'')+'>مفعّل</option><option value="0"'+(v?'':' selected')+'>متوقف</option></select>'}
 function setDlg(){
 var leads=[0,15,30,60,120,180];var st=status()||{notif:true,battery:false};
 openDlg('<h3>🔔 إعدادات وفحص التنبيهات</h3>'+
@@ -373,33 +427,46 @@ openDlg('<h3>🔔 إعدادات وفحص التنبيهات</h3>'+
 '<div class="stline"><span>'+(st.battery?'✅ البطارية: بدون قيود':'⚠️ البطارية مقيّدة (قد تتأخر التنبيهات)')+'</span>'+(st.battery?'':'<button data-st="bat">إزالة القيد</button>')+'</div>'+
 '<button class="mi pri" data-st="test" style="text-align:center">🔔 تجربة تنبيه الآن (يصل بعد 10 ثواني)</button>'+
 '<div class="f"><label>تنبيه قبل موعد الافتقاد</label><select id="sl">'+leads.map(function(m){return'<option value="'+m+'"'+(m===S.settings.lead?' selected':'')+'>'+(m===0?'بدون تنبيه مسبق':m===60?'قبلها بساعة':m===120?'قبلها بساعتين':m===180?'قبلها بـ 3 ساعات':'قبلها بـ '+m+' دقيقة')+'</option>'}).join('')+'</select></div>'+
-'<div class="f"><label>إشعار الصباح اليومي (عدد زيارات اليوم)</label><select id="sd"><option value="1"'+(S.settings.daily?' selected':'')+'>مفعّل</option><option value="0"'+(S.settings.daily?'':' selected')+'>متوقف</option></select></div>'+
+'<div class="f"><label>إشعار الصباح اليومي (عدد زيارات اليوم)</label>'+onOff('sd',S.settings.daily)+'</div>'+
 '<div class="f"><label>وقت إشعار الصباح</label><input id="st" type="time" value="'+esc(S.settings.dailyTime)+'"></div>'+
+'<div class="f"><label>🎂 إشعار عيد الميلاد</label>'+onOff('sb',S.settings.bd)+'</div>'+
+'<div class="f"><label>وقت إشعار عيد الميلاد</label><input id="sbt" type="time" value="'+esc(S.settings.bdTime)+'"></div>'+
+'<div class="f"><label>تذكير قبل عيد الميلاد بيوم</label>'+onOff('sbp',S.settings.bdPre)+'</div>'+
 '<div class="bt"><button id="ss" class="pri">حفظ</button><button id="sc2">إغلاق</button></div>');
 $('sc2').onclick=closeDlg;
-$('ss').onclick=function(){S.settings.lead=+$('sl').value;S.settings.daily=$('sd').value==='1';S.settings.dailyTime=$('st').value||'08:00';save();resync();closeDlg();toast('تم حفظ الإعدادات ✔')}}
+$('ss').onclick=function(){S.settings.lead=+$('sl').value;S.settings.daily=$('sd').value==='1';S.settings.dailyTime=$('st').value||'08:00';
+S.settings.bd=$('sb').value==='1';S.settings.bdTime=$('sbt').value||'09:00';S.settings.bdPre=$('sbp').value==='1';
+save();resync();closeDlg();toast('تم حفظ الإعدادات ✔')}}
 
+function syncBd(){
+if(!A)return;
+var list=S.servees.filter(function(s){return s.bday&&s.bmon}).map(function(s){return{n:s.name,d:s.bday,m:s.bmon}});
+var t=(S.settings.bdTime||'09:00').split(':');
+natq('setBirthdays',JSON.stringify(list),S.settings.bd?'1':'0',S.settings.bdPre?'1':'0',String(parseInt(t[0],10)||9),String(parseInt(t[1],10)||0))}
 function resync(){
 if(!A)return;
 natq('cancelAllAlarms');
-S.servees.forEach(function(s){if(s.alarmAt>Date.now()&&s.status!=='done')natq('scheduleVisit',String(s.id),String(s.alarmAt),s.name,s.address||'—',s.phone||'—',String(S.settings.lead))});
+S.servees.forEach(function(s){if(s.alarmAt>Date.now()&&s.status!=='done')schedVisit(s)});
 var t=(S.settings.dailyTime||'08:00').split(':');
-natq('setDaily',S.settings.daily?'1':'0',String(parseInt(t[0],10)||8),String(parseInt(t[1],10)||0))}
+natq('setDaily',S.settings.daily?'1':'0',String(parseInt(t[0],10)||8),String(parseInt(t[1],10)||0));
+syncBd()}
 
 /* ---------- events ---------- */
 $('list').addEventListener('click',function(ev){
 var t=ev.target.closest('[data-top]');if(t){if(t.getAttribute('data-top')==='notif')natq('openNotifSettings');return}
+var bmv=ev.target.closest('[data-bm]');if(bmv){bm+=+bmv.getAttribute('data-bm');if(bm>12)bm=1;if(bm<1)bm=12;render();return}
 var b=ev.target.closest('[data-act]');if(!b)return;var c=b.closest('[data-id]');if(!c)return;var s=get(+c.getAttribute('data-id'));if(!s)return;
 var a=b.getAttribute('data-act');
 if(a==='open')sheetDlg(s);
+else if(a==='greet')openWa(s,GREET);
 else if(a==='pil'){var k=b.getAttribute('data-k');s.p[wk][k]=((s.p[wk][k]||0)+1)%3;save();render()}
 else if(a==='att'){var v=+b.getAttribute('data-v');s.att[wk]=(s.att[wk]===v)?0:v;save();render()}
 else if(a==='stat'){
-if(s.status==='done'){s.status='wait';if(s.alarmAt>Date.now())natq('scheduleVisit',String(s.id),String(s.alarmAt),s.name,s.address||'—',s.phone||'—',String(S.settings.lead))}
+if(s.status==='done'){s.status='wait';if(s.alarmAt>Date.now())schedVisit(s)}
 else{s.status='done';natq('cancelAlarm',String(s.id))}
 save();render()}
 else if(a==='call'){if(!s.phone)toast('لا يوجد رقم هاتف');else nat('dial',ar(s.phone))}
-else if(a==='wa'){var n=waNum(s.phone);if(!n)toast('لا يوجد رقم هاتف');else nat('openUrl','https://wa.me/'+n)}
+else if(a==='wa')openWa(s,msgVisit(s));
 else if(a==='alarm')alarmDlg(s)});
 $('box').addEventListener('click',function(ev){
 var m=ev.target.closest('[data-m]');
@@ -413,19 +480,19 @@ return}
 var sa=ev.target.closest('[data-sa]');
 if(sa){var s=get(sheetId);if(!s)return;var a=sa.getAttribute('data-sa');
 if(a==='call'){if(!s.phone)toast('لا يوجد رقم هاتف');else nat('dial',ar(s.phone))}
-else if(a==='wa'){var n=waNum(s.phone);if(!n)toast('لا يوجد رقم هاتف');else nat('openUrl','https://wa.me/'+n)}
+else if(a==='wa')openWa(s,msgVisit(s));
 else if(a==='edit')formDlg(s);
 else if(a==='note')noteDlg(s);
 else if(a==='alarm')alarmDlg(s);
 else if(a==='pil'){var w=+sa.getAttribute('data-w'),k2=sa.getAttribute('data-k');s.p[w][k2]=((s.p[w][k2]||0)+1)%3;save();render();sheetDlg(s)}
 else if(a==='att'){var w2=+sa.getAttribute('data-w'),v=+sa.getAttribute('data-v');s.att[w2]=(s.att[w2]===v)?0:v;save();render();sheetDlg(s)}
-else if(a==='del')ask('حذف <b>'+esc(s.name)+'</b> نهائياً؟',function(){natq('cancelAlarm',String(s.id));S.servees=S.servees.filter(function(x){return x.id!==s.id});save();render()},'حذف');
+else if(a==='del')ask('حذف <b>'+esc(s.name)+'</b> نهائياً؟',function(){natq('cancelAlarm',String(s.id));S.servees=S.servees.filter(function(x){return x.id!==s.id});save();syncBd();render()},'حذف');
 return}
 var x=ev.target.closest('[data-aact]');if(!x)return;
 var act=x.getAttribute('data-aact');
 if(act==='acall'||act==='awa'){var sv=get(+x.closest('[data-aid]').getAttribute('data-aid'));if(!sv)return;
 if(!sv.phone){toast('لا يوجد رقم هاتف');return}
-if(act==='acall')nat('dial',ar(sv.phone));else{var nn=waNum(sv.phone);if(nn)nat('openUrl','https://wa.me/'+nn)}return}
+if(act==='acall')nat('dial',ar(sv.phone));else openWa(sv,msgVisit(sv));return}
 var i=+x.getAttribute('data-i');var ar2=S.archive[i];if(!ar2)return;
 if(act==='apdf'||act==='apdf2'){var k3=$('as'+i).value;closeDlg();sendReport(k3,ar2.servees.filter(function(s){return s.section===k3}),ar2.label,act==='apdf'?'wa':'any')}
 else if(act==='adel'){ask('حذف شهر <b>'+esc(ar2.label)+'</b> من السجل نهائياً؟',function(){S.archive.splice(i,1);save();archDlg()},'حذف')}});

@@ -13,6 +13,7 @@ object AlarmStore {
 
     const val DAILY_RC = 2000000000
     const val TEST_RC = 1999999990
+    const val BD_RC = 2000000010
 
     private fun prefs(c: Context) =
         c.getSharedPreferences("iftiqad_alarms", Context.MODE_PRIVATE)
@@ -121,6 +122,52 @@ object AlarmStore {
         }
     }
 
+    fun setBirthdays(c: Context, json: String, on: Boolean, pre: Boolean, hour: Int, minute: Int) {
+        prefs(c).edit()
+            .putString("bdays", json)
+            .putBoolean("bd_on", on)
+            .putBoolean("bd_pre", pre)
+            .putInt("bd_h", hour)
+            .putInt("bd_m", minute)
+            .apply()
+        val am = c.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        am.cancel(pending(c, BD_RC, "bday", "", "", "", 0, 0))
+        if (on) scheduleNextBd(c)
+    }
+
+    fun scheduleNextBd(c: Context) {
+        val p = prefs(c)
+        if (!p.getBoolean("bd_on", false)) return
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, p.getInt("bd_h", 9))
+        cal.set(Calendar.MINUTE, p.getInt("bd_m", 0))
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        if (cal.timeInMillis <= System.currentTimeMillis()) cal.add(Calendar.DAY_OF_YEAR, 1)
+        setExact(c, cal.timeInMillis, pending(c, BD_RC, "bday", "", "", "", 0, 0))
+    }
+
+    fun birthdaysOn(c: Context, cal: Calendar): List<String> {
+        val arr = try {
+            JSONArray(prefs(c).getString("bdays", "[]"))
+        } catch (e: Exception) {
+            JSONArray()
+        }
+        val d = cal.get(Calendar.DAY_OF_MONTH)
+        val m = cal.get(Calendar.MONTH) + 1
+        val y = cal.get(Calendar.YEAR)
+        val leap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0
+        val out = ArrayList<String>()
+        for (k in 0 until arr.length()) {
+            val o = arr.getJSONObject(k)
+            val od = o.getInt("d")
+            val om = o.getInt("m")
+            val hit = (od == d && om == m) || (od == 29 && om == 2 && !leap && d == 28 && m == 2)
+            if (hit) out.add(o.getString("n"))
+        }
+        return out
+    }
+
     fun scheduleTest(c: Context) {
         val t = System.currentTimeMillis() + 10000L
         addEntry(c, TEST_RC, "visit", "اختبار التنبيه", "—", "—", t, 0, t, false)
@@ -161,6 +208,7 @@ object AlarmStore {
         }
         save(c, keep)
         scheduleNextDaily(c)
+        scheduleNextBd(c)
     }
 
     fun setDaily(c: Context, on: Boolean, hour: Int, minute: Int) {

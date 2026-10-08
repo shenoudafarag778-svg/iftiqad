@@ -37,7 +37,8 @@ class MainActivity : Activity() {
         web.settings.allowFileAccess = true
         web.addJavascriptInterface(Bridge(), "Android")
         setContentView(web)
-        val hash = if (intent.getBooleanExtra("open_today", false)) "#today" else ""
+        val tab = intent.getStringExtra("open_tab") ?: ""
+        val hash = if (tab.isNotEmpty()) "#$tab" else ""
         web.loadUrl("file:///android_asset/index.html$hash")
 
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -50,8 +51,9 @@ class MainActivity : Activity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (intent.getBooleanExtra("open_today", false)) {
-            web.evaluateJavascript("window.goToday&&window.goToday()", null)
+        val tab = intent.getStringExtra("open_tab") ?: ""
+        if (tab == "today" || tab == "bday") {
+            web.evaluateJavascript("window.goTab&&window.goTab('$tab')", null)
         }
     }
 
@@ -95,12 +97,10 @@ class MainActivity : Activity() {
 
     inner class Bridge {
         @JavascriptInterface
-        fun scheduleVisit(
-            id: String, time: String, name: String, address: String, phone: String, lead: String
-        ) {
+        fun scheduleVisit(id: String, time: String, name: String, phone: String, lead: String) {
             try {
                 AlarmStore.scheduleVisit(
-                    applicationContext, id.toInt(), time.toLong(), name, address, phone,
+                    applicationContext, id.toInt(), time.toLong(), name, "", phone,
                     lead.toIntOrNull() ?: 0
                 )
             } catch (e: Exception) {
@@ -123,6 +123,17 @@ class MainActivity : Activity() {
             try {
                 AlarmStore.setDaily(
                     applicationContext, on == "1", hour.toIntOrNull() ?: 8, minute.toIntOrNull() ?: 0
+                )
+            } catch (e: Exception) {
+            }
+        }
+
+        @JavascriptInterface
+        fun setBirthdays(json: String, on: String, pre: String, hour: String, minute: String) {
+            try {
+                AlarmStore.setBirthdays(
+                    applicationContext, json, on == "1", pre == "1",
+                    hour.toIntOrNull() ?: 9, minute.toIntOrNull() ?: 0
                 )
             } catch (e: Exception) {
             }
