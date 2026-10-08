@@ -12,16 +12,27 @@ import java.util.Locale
 
 object Notifier {
 
-    const val CHANNEL = "iftiqad_msg_v1"
+    const val CHANNEL = "iftiqad_msg_v2"
 
     private fun ensureChannel(c: Context) {
         val nm = c.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         try { nm.deleteNotificationChannel("iftiqad_alarm_v1") } catch (e: Exception) {}
+        try { nm.deleteNotificationChannel("iftiqad_msg_v1") } catch (e: Exception) {}
         if (nm.getNotificationChannel(CHANNEL) == null) {
             val ch = NotificationChannel(CHANNEL, "تنبيهات الافتقاد", NotificationManager.IMPORTANCE_HIGH)
             ch.description = "تنبيهات مواعيد الافتقاد"
             ch.enableVibration(true)
             ch.vibrationPattern = longArrayOf(0, 300, 200, 300)
+            ch.enableLights(true)
+            ch.setShowBadge(true)
+            val attrs = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            ch.setSound(
+                android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION),
+                attrs
+            )
             ch.lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
             nm.createNotificationChannel(ch)
         }

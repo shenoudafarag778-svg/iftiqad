@@ -2,18 +2,22 @@ package com.iftiqad.app
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlarmManager
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Base64
+import android.os.PowerManager
+import android.provider.Settings
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import java.io.File
 
@@ -51,27 +55,19 @@ class MainActivity : Activity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::web.isInitialized) {
+            web.evaluateJavascript("window.onResumeApp&&window.onResumeApp()", null)
+        }
+    }
+
     @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         web.evaluateJavascript(
             "(function(){return window.onBack?window.onBack():false})()"
         ) { r ->
             if (r != "true") finish()
-        }
-    }
-
-    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        val uri = data?.data
-        if (requestCode == 77 && resultCode == RESULT_OK && uri != null) {
-            try {
-                val bytes = contentResolver.openInputStream(uri)!!.use { it.readBytes() }
-                val b64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
-                web.evaluateJavascript("window.onBackupData&&window.onBackupData('$b64')", null)
-            } catch (e: Exception) {
-                Toast.makeText(this, "تعذرت قراءة الملف", Toast.LENGTH_LONG).show()
-            }
         }
     }
 
@@ -133,9 +129,64 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun getStatus(): String {
+            return try {
+                val notif = NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()
+                val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+                val bat = pm.isIgnoringBatteryOptimizations(packageName)
+                "{\"notif\":$notif,\"battery\":$bat}"
+            } catch (e: Exception) {
+                "{\"notif\":true,\"battery\":false}"
+            }
+        }
+
+        @JavascriptInterface
+        fun openNotifSettings() {
+            runOnUiThread {
+                try {
+                    startActivity(
+                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                            .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                    )
+                } catch (e: Exception) {
+                    toast("افتح إعدادات الهاتف ← التطبيقات ← تطبيق افتقاد ← الإشعارات")
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun openBatterySettings() {
+            runOnUiThread {
+                try {
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                            Uri.parse("package:$packageName")
+                        )
+                    )
+                } catch (e: Exception) {
+                    try {
+                        startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                    } catch (e2: Exception) {
+                        toast("افتح إعدادات الهاتف ← البطارية ← تطبيق افتقاد ← بدون قيود")
+                    }
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun testNotify() {
+            try {
+                AlarmStore.scheduleTest(applicationContext)
+            } catch (e: Exception) {
+                toast("تعذر ضبط التجربة")
+            }
+        }
+
+        @JavascriptInterface
         fun dial(phone: String) {
             try {
-                startActivity(Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone")))
+                startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
             } catch (e: Exception) {
                 toast("تعذر فتح الاتصال")
             }
@@ -144,7 +195,7 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun openUrl(url: String) {
             try {
-                startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
             } catch (e: Exception) {
                 toast("تعذر فتح الرابط")
             }
@@ -163,41 +214,6 @@ class MainActivity : Activity() {
                 }
             } catch (e: Exception) {
                 toast("تعذر إنشاء الملف: ${e.message}")
-            }
-        }
-
-        @JavascriptInterface
-        fun exportBackup(text: String, fileName: String) {
-            try {
-                val dir = File(cacheDir, "reports")
-                dir.mkdirs()
-                val f = File(dir, fileName.replace(Regex("[\\\\/:*?\"<>|]"), "_"))
-                f.writeText(text, Charsets.UTF_8)
-                runOnUiThread {
-                    try {
-                        shareFile(f, "application/json", false)
-                    } catch (e: Exception) {
-                        toast("تعذرت المشاركة")
-                    }
-                }
-            } catch (e: Exception) {
-                toast("تعذر إنشاء النسخة الاحتياطية")
-            }
-        }
-
-        @JavascriptInterface
-        fun pickBackup() {
-            runOnUiThread {
-                try {
-                    val i = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = "*/*"
-                    }
-                    @Suppress("DEPRECATION")
-                    startActivityForResult(i, 77)
-                } catch (e: Exception) {
-                    toast("تعذر فتح اختيار الملفات")
-                }
             }
         }
 

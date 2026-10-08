@@ -12,6 +12,7 @@ import java.util.Calendar
 object AlarmStore {
 
     const val DAILY_RC = 2000000000
+    const val TEST_RC = 1999999990
 
     private fun prefs(c: Context) =
         c.getSharedPreferences("iftiqad_alarms", Context.MODE_PRIVATE)
@@ -58,6 +59,22 @@ object AlarmStore {
         }
     }
 
+    private fun setAlarm(c: Context, kind: String, time: Long, pi: PendingIntent) {
+        if (kind == "daily") {
+            setExact(c, time, pi)
+            return
+        }
+        val am = c.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        try {
+            val show = PendingIntent.getActivity(
+                c, 0, Intent(c, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE
+            )
+            am.setAlarmClock(AlarmManager.AlarmClockInfo(time, show), pi)
+        } catch (e: Exception) {
+            setExact(c, time, pi)
+        }
+    }
+
     private fun removeRc(c: Context, rc: Int) {
         val old = load(c)
         val nw = JSONArray()
@@ -72,7 +89,7 @@ object AlarmStore {
         c: Context, rc: Int, kind: String, name: String, address: String,
         phone: String, time: Long, lead: Int, vt: Long, persist: Boolean
     ) {
-        setExact(c, time, pending(c, rc, kind, name, address, phone, lead, vt))
+        setAlarm(c, kind, time, pending(c, rc, kind, name, address, phone, lead, vt))
         if (persist) {
             removeRc(c, rc)
             val list = load(c)
@@ -102,6 +119,11 @@ object AlarmStore {
         if (lead > 0 && time - lead * 60000L > now) {
             addEntry(c, id * 10 + 1, "pre", name, address, phone, time - lead * 60000L, lead, time, true)
         }
+    }
+
+    fun scheduleTest(c: Context) {
+        val t = System.currentTimeMillis() + 10000L
+        addEntry(c, TEST_RC, "visit", "اختبار التنبيه", "—", "—", t, 0, t, false)
     }
 
     fun cancelVisit(c: Context, id: Int) {
